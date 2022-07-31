@@ -92,7 +92,17 @@ namespace PtrReflection
         MulticastDelegateValue* delegateValue;
         IntPtr delegateValueIntPtr;
 
-        public unsafe TypeAddrReflectionWrapper(Type type)
+        public static TypeAddrReflectionWrapper GetWrapper(Type type)
+        {
+            TypeAddrReflectionWrapper wrapper;
+            if (!all.TryGetValue(type, out wrapper))
+            {
+                all[type] = wrapper = new TypeAddrReflectionWrapper(type);
+            }
+            return wrapper;
+        }
+        static Dictionary<Type, TypeAddrReflectionWrapper> all = new Dictionary<Type, TypeAddrReflectionWrapper>();
+        unsafe TypeAddrReflectionWrapper(Type type)
         {
             isValueType = type.IsValueType;
             Dictionary<string, TypeAddrFieldAndProperty> nameOfField = new Dictionary<string, TypeAddrFieldAndProperty>();

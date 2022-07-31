@@ -38,57 +38,6 @@ public class Test030 : MonoBehaviour
 
     private unsafe void Start()
     {
-        //DynamicCreateType();
-        return;
-
-        //UIntPtr meshClass = new UIntPtr();
-        //UIntPtr monoDomai = new UIntPtr();
-        //UnityCombineMeshesHack.GetNativeAddrOfCombineMeshesImpl2(ref meshClass, ref monoDomai);
-
-        Vector3 aaa = new Vector3(2893,333,55555);
-
-        ulong gcHandle;
-        void* v = UnsafeUtility.PinGCObjectAndGetAddress(aaa, out gcHandle);
-        UnsafeUtility.ReleaseGCObject(gcHandle);
-        Debug.Log((long)v);
-
-        long* vv = (long*)&v;
-        Debug.Log((long)vv);
-        Debug.Log(*((float*)v + 5));
-        Debug.Log(*((Vector3*)v ));
-
-
-        TypedReference tf2 = __makeref(v);
-        Vector3* ptr2 = (Vector3*)(*((IntPtr*)&tf2 + 1));
-        Debug.Log(*ptr2);
-
-        void* dz = (void*)&v;
-        IntPtr zz = new IntPtr(dz);
-        Debug.Log(*(Vector3*)v);
-
-        Vector3 aaa2 = *(Vector3*)vv;
-        Vector3 aaa3 = GCC(v);
-
-
-        TypedReference tf = __makeref(aaa);
-        Vector3* ptr = (Vector3*)(*((IntPtr*)&tf + 1));
-
-
-        Debug.Log(*ptr); 
-
-        Debug.Log(aaa);
-        Debug.Log(aaa2);
-        Debug.Log(aaa3);
-        return;
-
-        if (!text)
-        {
-            text = GameObject.FindObjectOfType<Text>();
-        }
-        if (!input)
-        {
-            input = GameObject.FindObjectOfType<InputField>();
-        }
     }
 
 
@@ -102,72 +51,8 @@ public class Test030 : MonoBehaviour
 
         ulong gcHandle;
         byte* bytePtr;
-        /*
-        MyClass2 ccc = new MyClass2();
-        //ccc.str = 44444;
-        //ccc.One = 4324;
-        //ccc.point = new Vector3(-99.56f, 50.22f, 9f);
-        //ccc.point4 = new Vector3Int(2, 3, 4);
-        //ccc.dd = 11;
 
-        MyClass instens2 = new MyClass();
-        MyClass instens3 = new MyClass();
-        MyClass instens4 = new MyClass();
-
-        Debug.Log(new TypeAddrReflectionWrapper(typeof(MyClass2)).heapSize);
-        //Debug.Log(UnsafeUtility.SizeOf(typeof(MyClass2)));
-
-        long* longPtr = (long*)UnsafeUtility.PinGCObjectAndGetAddress(ccc, out gcHandle);
-        IntPtr**** p1 = (IntPtr****)longPtr;
-        IntPtr* p2 = ***p1;
-        p2 += 3;
-        int* intPtrIdepth = (int*)p2;
-        ++intPtrIdepth;
-        int instanceSize = *intPtrIdepth;
-
-        //MonoVTable
-        //MonoClass
-        long* MonoVTable = (long*)*(long*)(*longPtr);
-        long* MonoClass = (long*)*(long*)(*MonoVTable);
-        long element_class = *MonoClass;
-        long cast_class = *(MonoClass + 1);
-        long supertypes = *(MonoClass + 2);
-        byte* kk = (byte*)(MonoClass + 3);
-        UInt16 idepth = *(UInt16*)(kk);
-        kk += 2;
-
-        byte rank = *(byte*)(kk);
-        kk += 2;
-
-        int instance_size = *(int*)(kk);
-
-        long* _MonoType = *(long**)typeof(MyClass2).TypeHandle.Value;
-        long* klass = (long*)*(long*)(*_MonoType);
-
-        Debug.Log("MonoClass : " + (long)(MonoClass));
-        Debug.Log("klass : " + (long)(klass));
-
-        Debug.Log("*element_class : " + (element_class));
-        Debug.Log("*cast_class : " + (cast_class));
-        Debug.Log("**supertypes : " + (supertypes));
-        Debug.Log("idepth : " + (idepth));
-        Debug.Log("rank : " + (rank));
-        Debug.Log("instance_size : " + (instance_size));
-
-        int instance_size2 =
-        UnsafeOperation.HeapSizeOf(UnsafeOperation.GetTypeHead(typeof(MyClass2)));
-        
-        Debug.Log("instance_size2 : " + (instance_size2));
-
-        for (int i = 0; i < 20; i++)
-        {
-            Debug.Log(i + "," + (*longPtr));
-            ++longPtr;
-        }
-        return;
-        */
-
-        var warp = new TypeAddrReflectionWrapper(typeof(MyClass));
+        var warp = TypeAddrReflectionWrapper.GetWrapper(typeof(MyClass));
 
         //bytePtr = (byte*)UnsafeUtility.PinGCObjectAndGetAddress(ccc, out gcHandle);
         var instens = (MyClass)warp.Create(out gcHandle, out bytePtr);
@@ -317,7 +202,7 @@ public class Test030 : MonoBehaviour
     {
         testCount = int.Parse(input.text);
         sb = new StringBuilder();
-        var warp = new TypeAddrReflectionWrapper(typeof(MyClass));
+        var warp = TypeAddrReflectionWrapper.GetWrapper(typeof(MyClass));
 
         string fieldName = "str";
         int nameSize = fieldName.Length;
@@ -337,15 +222,16 @@ public class Test030 : MonoBehaviour
         //fieldName = "one";
         //nameSize = fieldName.Length;
 
-        var addr1 = warp.nameOfField[nameof(MyClass.one)];
-        var addr2 = warp.nameOfField[nameof(MyClass.str)];
+        var addr1 = warp.nameOfField[nameof(MyClass.str)];
+        var addr2 = warp.nameOfField[nameof(MyClass.one)];
         var addr3 = warp.nameOfField[nameof(MyClass.point)];
 
         oTime.Reset(); oTime.Start();
         for (int i = 0; i < testCount; i++)
         {
-            typeof(MyClass).GetField(nameof(MyClass.one)).SetValue(myClass, 18);
             typeof(MyClass).GetField(nameof(MyClass.str)).SetValue(myClass, str);
+            typeof(MyClass).GetField(nameof(MyClass.one)).SetValue(myClass, 18);
+            typeof(MyClass).GetField(nameof(MyClass.point)).SetValue(myClass, point);
         }
         oTime.Stop();
         DebugLog("FieldInfo SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
@@ -354,8 +240,8 @@ public class Test030 : MonoBehaviour
         oTime.Reset(); oTime.Start();
         for (int i = 0; i < testCount; i++)
         {
-            warp.nameOfField[nameof(MyClass.one)].SetValue(bytePtr, 18);
             warp.nameOfField[nameof(MyClass.str)].SetValue(bytePtr, str);
+            warp.nameOfField[nameof(MyClass.one)].SetValue(bytePtr, 18);
             warp.nameOfField[nameof(MyClass.point)].SetValue(bytePtr, point);
         }
         oTime.Stop();
@@ -367,7 +253,7 @@ public class Test030 : MonoBehaviour
         {
             UnsafeUtility.CopyObjectAddressToPtr(str, bytePtr + warp.nameOfField[nameof(MyClass.str)].offset);
             *(int*)(bytePtr + warp.nameOfField[nameof(MyClass.one)].offset) = 18;
-            var addr = warp.nameOfField[nameof(MyClass.one)];
+            var addr = warp.nameOfField[nameof(MyClass.point)];
             UnsafeUtility.MemCpy(bytePtr + addr.offset, UnsafeUtility.AddressOf(ref point), addr.stackSize);
         }
         oTime.Stop();
@@ -437,8 +323,8 @@ public class Test030 : MonoBehaviour
         oTime.Reset(); oTime.Start();
         for (int i = 0; i < testCount; i++)
         {
-            v1 = UnsafeUtility.ReadArrayElement<string>(bytePtr + addr2.offset, 0);
-            v2 = *(int*)(bytePtr + addr1.offset);
+            v1 = UnsafeUtility.ReadArrayElement<string>(bytePtr + addr1.offset, 0);
+            v2 = *(int*)(bytePtr + addr2.offset);
             v3 = UnsafeUtility.ReadArrayElement<Vector3>(bytePtr + addr3.offset, 0);
         }
         oTime.Stop();
@@ -459,7 +345,102 @@ public class Test030 : MonoBehaviour
 
 
         DebugLog("");
+        DebugLog("=========↓↓↓Property↓↓↓=============");
+        DebugLog("");
+
+        addr1 = warp.nameOfField[nameof(MyClass.Str)];
+        addr2 = warp.nameOfField[nameof(MyClass.One)];
+        addr3 = warp.nameOfField[nameof(MyClass.Point)];
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            typeof(MyClass).GetProperty(nameof(MyClass.Str)).SetValue(myClass, str);
+            typeof(MyClass).GetProperty(nameof(MyClass.One)).SetValue(myClass, 18);
+            typeof(MyClass).GetProperty(nameof(MyClass.Point)).SetValue(myClass, point);
+        }
+        oTime.Stop();
+        DebugLog("PropertyInfo SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            warp.nameOfField[nameof(MyClass.Str)].SetValue(bytePtr, str);
+            warp.nameOfField[nameof(MyClass.One)].SetValue(bytePtr, 18);
+            warp.nameOfField[nameof(MyClass.Point)].SetValue(bytePtr, point);
+        }
+        oTime.Stop();
+        DebugLog("ReflectionManager SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            warp.nameOfField[nameof(MyClass.Str)].propertyDelegateItem.setString(bytePtr, str);
+            warp.nameOfField[nameof(MyClass.One)].propertyDelegateItem.setInt32(bytePtr, 18);
+            warp.nameOfField[nameof(MyClass.Point)].propertyDelegateItem.setObject(bytePtr, point);
+        }
+        oTime.Stop();
+        DebugLog("ReflectionManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            addr1.propertyDelegateItem.setString(bytePtr, str);
+            addr2.propertyDelegateItem.setInt32(bytePtr, 18);
+            addr3.propertyDelegateItem.setObject(bytePtr, point);
+        }
+        oTime.Stop();
+        DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+        DebugLog("");
         DebugLog("====================================");
+        DebugLog("");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            v1 = (string)typeof(MyClass).GetProperty(nameof(MyClass.Str)).GetValue(myClass);
+            v2 = (int)typeof(MyClass).GetProperty(nameof(MyClass.One)).GetValue(myClass);
+            v3 = (Vector3)typeof(MyClass).GetProperty(nameof(MyClass.Point)).GetValue(myClass);
+        }
+        oTime.Stop();
+        DebugLog("PropertyInfo GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            v1 = (string)warp.nameOfField[nameof(MyClass.Str)].GetValue(bytePtr);
+            v2 = (int)warp.nameOfField[nameof(MyClass.One)].GetValue(bytePtr);
+            v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].GetValue(bytePtr);
+        }
+        oTime.Stop();
+        DebugLog("ReflectionManager GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            v1 = warp.nameOfField[nameof(MyClass.Str)].propertyDelegateItem.getString(bytePtr);
+            v2 = warp.nameOfField[nameof(MyClass.One)].propertyDelegateItem.getInt32(bytePtr);
+            v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].propertyDelegateItem.getObject(bytePtr);
+        }
+        oTime.Stop();
+        DebugLog("ReflectionManager GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            v1 = addr1.propertyDelegateItem.getString(bytePtr);
+            v2 = addr2.propertyDelegateItem.getInt32(bytePtr);
+            v3 = (Vector3)addr3.propertyDelegateItem.getObject(bytePtr);
+        }
+        oTime.Stop();
+        DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+
+
+        DebugLog("");
+        DebugLog("=============↓↓↓CreateInstance↓↓↓===============");
         DebugLog("");
 
         oTime.Reset(); oTime.Start();
@@ -487,6 +468,10 @@ public class Test030 : MonoBehaviour
         }
         oTime.Stop();
         DebugLog(" new ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+
+
 
         text.text = sb.ToString();
 
