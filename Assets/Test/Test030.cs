@@ -391,6 +391,17 @@ public class Test030 : MonoBehaviour
         oTime.Stop();
         DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            v1 = myClass.Str;
+            v2 = myClass.One;
+            v3 = myClass.Point;
+        }
+        oTime.Stop();
+        DebugLog("= ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
 
         DebugLog("");
         DebugLog("====================================");
@@ -436,6 +447,15 @@ public class Test030 : MonoBehaviour
         oTime.Stop();
         DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
+        oTime.Reset(); oTime.Start();
+        for (int i = 0; i < testCount; i++)
+        {
+            myClass.Str = str;
+            myClass.One = 18;
+            myClass.Point = point;
+        }
+        oTime.Stop();
+        DebugLog("= ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
 
