@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using PtrReflection;
 
-public class Test030 : MonoBehaviour
+public class TestScript : MonoBehaviour
 {
     public Text text;
     public InputField input;

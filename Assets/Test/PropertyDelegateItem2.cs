@@ -318,7 +318,6 @@ namespace PtrReflection
             set { _set = (Action<Value>)value; }
         }
 
-
         public void Set(object value)
         {
             _set((Value)value);
@@ -352,7 +351,6 @@ namespace PtrReflection
         }
     }
 
-
     public class RefPropertyGetWrapper<Target, Value> : IGetStruct
     {
         public RefFunc<Target, Value> _get;
@@ -373,7 +371,6 @@ namespace PtrReflection
             return v;
         }
     }
-
 
     public interface ISetStruct
     {

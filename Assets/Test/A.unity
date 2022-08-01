@@ -391,7 +391,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 333728503}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.054733135
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -825,7 +825,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -941.5, y: 461.57953}
+  m_AnchoredPosition: {x: -941.5, y: 461.57944}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &596399325
@@ -1321,154 +1321,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "using System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\nusing
-    System.Text;\r\nusing System.Reflection;\r\nusing System.Runtime.Serialization;\r\nusing
-    UnityEngine;\r\nusing UnityEngine.UI;\r\nusing Unity.Collections.LowLevel.Unsafe;\r\nusing
-    System.Reflection.Emit;\r\n\r\npublic class Test030 : MonoBehaviour\r\n{\r\n   
-    public Text text;\r\n    public InputField input;\r\n\r\n#if UNITY_EDITOR\r\n   
-    public static Type DynamicCreateType()\r\n    {\r\n    \_\_\_\_//\u52A8\u6001\u521B\u5EFA\u7A0B\u5E8F\u96C6\r\n   
-    \_\_\_\_AssemblyName DemoName = new AssemblyName(\"CustomReflection\");\r\n       
-    AssemblyBuilder dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(DemoName,
-    AssemblyBuilderAccess.RunAndSave);\r\n    \_\_\_\_//\u52A8\u6001\u521B\u5EFA\u6A21\u5757\r\n   
-    \_\_\_\_ModuleBuilder mb = dynamicAssembly.DefineDynamicModule(DemoName.Name,
-    DemoName.Name + \".dll\");\r\n    \_\_\_\_//\u52A8\u6001\u521B\u5EFA\u7C7BMyClass\r\n\r\n   
-    \_\_\_\_TypeBuilder tb = mb.DefineType(\"GeneralTool\", TypeAttributes.Public);\r\n\r\n   
-    \_\_\_\_//\u52A8\u6001\u521B\u5EFA\u5B57\u6BB5\r\n    \_\_\_\_FieldBuilder fb
-    = tb.DefineField(\"myField\", typeof(System.String), FieldAttributes.Private);\r\n       
-    //\u52A8\u6001\u521B\u5EFA\u6784\u9020\u51FD\u6570\r\n        Type[] clorType
-    = new Type[] { typeof(System.String) };\r\n        ConstructorBuilder cb1 = tb.DefineConstructor(MethodAttributes.Public,
-    CallingConventions.Standard, clorType);\r\n    \_\_\_\_//\u751F\u6210\u6307\u4EE4\r\n   
-    \_\_\_\_ILGenerator ilg = cb1.GetILGenerator();//\u751F\u6210\_Microsoft\_\u4E2D\u95F4\u8BED\u8A00\_(MSIL)\_\u6307\u4EE4\r\n   
-    \_\_\_\_ilg.Emit(OpCodes.Ldarg_0);\r\n        ilg.Emit(OpCodes.Call, typeof(object).GetConstructor(Type.EmptyTypes));\r\n       
-    ilg.Emit(OpCodes.Ldarg_0);\r\n        ilg.Emit(OpCodes.Ldarg_1);\r\n        ilg.Emit(OpCodes.Stfld,
-    fb);\r\n        ilg.Emit(OpCodes.Ret);\r\n\r\n        //\u52A8\u6001\u521B\u5EFA\u5C5E\u6027\r\n       
-    PropertyBuilder pb = tb.DefineProperty(\"GeneralTool\", PropertyAttributes.HasDefault,
-    typeof(string), null);\r\n\r\n        MethodBuilder mainMethodBuilder2 = tb.DefineMethod(\"SetObject\",
-    MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard,\r\n            
-    null, new Type[] { typeof(void*), typeof(object) }\r\n            );\r\n\r\n       
-    ILGenerator ilGenerator = mainMethodBuilder2.GetILGenerator();\r\n        ilGenerator.Emit(OpCodes.Ldarg_0);\r\n       
-    ilGenerator.Emit(OpCodes.Ldarg_1);\r\n        ilGenerator.Emit(OpCodes.Stobj,
-    typeof(object));\r\n        ilGenerator.Emit(OpCodes.Ret);\r\n\r\n\r\n       
-    //MethodBuilder mainMethodBuilder3 = tb.DefineMethod(\"SizeOf\", MethodAttributes.Static
-    | MethodAttributes.Public, CallingConventions.Standard,\r\n        //    typeof(int),
-    new Type[] { typeof(Type)}\r\n        //    );\r\n\r\n        //ILGenerator ilGenerator3
-    = mainMethodBuilder3.GetILGenerator();\r\n        //ilGenerator3.Emit(OpCodes.Sizeof,
-    typeof(object));\r\n        //ilGenerator3.Emit(OpCodes.Ret);\r\n\r\n    \_\_\_\_////\u52A8\u6001\u521B\u5EFA\u65B9\u6CD5\r\n   
-    \_\_\_\_//MethodAttributes getSetAttr = MethodAttributes.Public | MethodAttributes.SpecialName;\r\n       
-    //MethodBuilder myMethod = tb.DefineMethod(\"GetField\", getSetAttr, typeof(string),
-    Type.EmptyTypes);\r\n    \_\_\_\_////\u751F\u6210\u6307\u4EE4\r\n    \_\_\_\_//ILGenerator
-    numberGetIL = myMethod.GetILGenerator();\r\n        //numberGetIL.Emit(OpCodes.Ldarg_0);\r\n       
-    //numberGetIL.Emit(OpCodes.Ldfld, fb);\r\n        //numberGetIL.Emit(OpCodes.Ret);\r\n\r\n\r\n\r\n   
-    \_\_\_\_//\u4F7F\u7528\u52A8\u6001\u7C7B\u521B\u5EFA\u7C7B\u578B\r\n    \_\_\_\_Type
-    classType = tb.CreateType();\r\n    \_\_\_\_//\u4FDD\u5B58\u52A8\u6001\u521B\u5EFA\u7684\u7A0B\u5E8F\u96C6\_(\u7A0B\u5E8F\u96C6\u5C06\u4FDD\u5B58\u5728\u7A0B\u5E8F\u76EE\u5F55\u4E0B\u8C03\u8BD5\u65F6\u5C31\u5728Debug\u4E0B)\r\n   
-    \_\_\_\_dynamicAssembly.Save(DemoName.Name + \".dll\");\r\n    \_\_\_\_//\u521B\u5EFA\u7C7B\r\n   
-    \_\_\_\_return classType;\r\n    }\r\n#endif\r\n\r\n\r\n    public int testCount
-    = 200000;\r\n    System.Diagnostics.Stopwatch oTime = new System.Diagnostics.Stopwatch();\r\n\r\n   
-    StringBuilder sb = new StringBuilder();\r\n    void DebugLog(object obj)\r\n   
-    {\r\n        string txt = obj.ToString();\r\n#if UNITY_EDITOR\r\n        Debug.Log(txt);\r\n#endif\r\n       
-    sb.AppendLine(txt);\r\n    }\r\n    private void Start()\r\n    {\r\n       
-    if (!text)\r\n        {\r\n            text = GameObject.FindObjectOfType<Text>();\r\n       
-    }\r\n        if (!input)\r\n        {\r\n            input = GameObject.FindObjectOfType<InputField>();\r\n       
-    }\r\n    }\r\n\r\n    public unsafe void RunTest()\r\n    {\r\n        testCount
-    = int.Parse(input.text);\r\n        sb = new StringBuilder();\r\n        //DynamicCreateType();\r\n       
-    MyClass myClass = (MyClass)FormatterServices.GetUninitializedObject(typeof(MyClass));
-    //does not call ctor\r\n        DebugLog(myClass.One); //write \"0\"\r\n       
-    myClass.One = 1;\r\n        DebugLog(myClass.One); //write \"1\"\r\n        var
-    warp = ReflectionManager.GetDictionaryTypeFields(typeof(MyClass));\r\n       
-    var instens = warp.Create();\r\n        DebugLog(\"\u52A8\u6001\u521B\u5EFA \"
-    + instens.GetType()); \r\n\r\n\r\n        DebugLog(warp.GetValue(myClass, \"One\"));\r\n       
-    warp.SetValue(myClass, \"One\", 18);\r\n\r\n        DebugLog(\"\u8F93\u51FA18
-    \" + myClass.One);\r\n\r\n        warp.SetValue(myClass, \"str\", \"123456adasw\");\r\n       
-    DebugLog(myClass.str);\r\n        myClass.str = \"uuuuusssss\";\r\n        DebugLog(warp.GetValue(myClass,
-    \"str\"));\r\n\r\n        Vector3Int print = new Vector3Int(-1231, 123, 165535);\r\n       
-    //Test(print);\r\n\r\n        warp.SetValue(myClass, \"point\", print);\r\n       
-    DebugLog(myClass.point);\r\n        myClass.point = new Vector3Int(1002, 5000,
-    15161);\r\n        DebugLog(warp.GetValue(myClass, \"point\"));\r\n\r\n       
-    string str = \"hello world\";\r\n\r\n        DebugLog(\"\");\r\n        DebugLog(\"\u5FAA\u73AF\"
-    + testCount + \"\u6B21\");\r\n        DebugLog(\"====================================\");\r\n       
-    DebugLog(\"\");\r\n\r\n        oTime.Reset(); oTime.Start();\r\n        for (int
-    i = 0; i < testCount; i++)\r\n        {\r\n            typeof(MyClass).GetField(\"str\").SetValue(myClass,
-    str);\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"FieldInfo SetValue\uFF1A\"
-    + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset();
-    oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n        {\r\n           
-    warp.SetValue(myClass, \"str\", str);\r\n        }\r\n        oTime.Stop();\r\n       
-    DebugLog(\"ReflectionManager SetValue\uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            myClass.str =
-    str;\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"= \uFF1A\" +
-    oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n        DebugLog(\"\");\r\n       
-    DebugLog(\"====================================\");\r\n        DebugLog(\"\");\r\n\r\n\r\n       
-    oTime.Reset(); oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n       
-    {\r\n            string v = (string)typeof(MyClass).GetField(\"str\").GetValue(myClass);\r\n       
-    }\r\n        oTime.Stop();\r\n        DebugLog(\"FieldInfo GetValue\uFF1A\" +
-    oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset();
-    oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n        {\r\n           
-    string v = (string)warp.GetValue(myClass, \"str\");\r\n        }\r\n        oTime.Stop();\r\n       
-    DebugLog(\"ReflectionManager GetValue\uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            string v = myClass.str;\r\n       
-    }\r\n        oTime.Stop();\r\n        DebugLog(\"= \uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n\r\n        DebugLog(\"\");\r\n        DebugLog(\"====================================\");\r\n       
-    DebugLog(\"\");\r\n\r\n        oTime.Reset(); oTime.Start();\r\n        for (int
-    i = 0; i < testCount; i++)\r\n        {\r\n            MyClass a = (MyClass)System.Activator.CreateInstance(typeof(MyClass));\r\n       
-    }\r\n        oTime.Stop();\r\n        DebugLog(\"Activator CreateInstance\uFF1A\"
-    + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset();
-    oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n        {\r\n           
-    MyClass a = (MyClass)warp.Create();\r\n        }\r\n        oTime.Stop();\r\n       
-    DebugLog(\"ReflectionManager Create\uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            MyClass a = new
-    MyClass();\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\" new \uFF1A\"
-    + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n\r\n       
-    DebugLog(\"\");\r\n        DebugLog(\"=\u2193\u2193\u2193\u2193\u2193\u2193==\u5FFD\u7565\u5B57\u7B26\u4E32\u67E5\u8BE2==\u2193\u2193\u2193\u2193\u2193\u2193=\");\r\n       
-    DebugLog(\"\");\r\n\r\n        FieldInfo fieldInfo = typeof(MyClass).GetField(\"str\");\r\n       
-    var nameOfField = warp.nameOfField[\"str\"];\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            fieldInfo.SetValue(myClass,
-    str);\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"FieldInfo SetValue\uFF1A\"
-    + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset();
-    oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n        {\r\n           
-    nameOfField.SetValue(myClass, str);\r\n        }\r\n        oTime.Stop();\r\n       
-    DebugLog(\"ReflectionManager SetValue\uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            myClass.str =
-    str;\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"= \uFF1A\" +
-    oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n        DebugLog(\"\");\r\n       
-    DebugLog(\"====================================\");\r\n        DebugLog(\"\");\r\n\r\n\r\n       
-    oTime.Reset(); oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n       
-    {\r\n            string v = (string)fieldInfo.GetValue(myClass);\r\n        }\r\n       
-    oTime.Stop();\r\n        DebugLog(\"FieldInfo GetValue\uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            string v = (string)nameOfField.GetValue(myClass);\r\n       
-    }\r\n        oTime.Stop();\r\n        DebugLog(\"ReflectionManager GetValue\uFF1A\"
-    + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n        oTime.Reset();
-    oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n        {\r\n           
-    string v = myClass.str;\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"=
-    \uFF1A\" + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n       
-    DebugLog(\"\");\r\n        DebugLog(\"=\u2193\u2193\u2193\u2193\u2193\u2193\u2193=
-    void* =\u2193\u2193\u2193\u2193\u2193\u2193\u2193=\");\r\n        DebugLog(\"\");\r\n\r\n\r\n       
-    ulong gcHandle;\r\n        void* voidPtr = UnsafeUtility.PinGCObjectAndGetAddress(myClass,
-    out gcHandle);\r\n        UnsafeUtility.ReleaseGCObject(gcHandle);\r\n\r\n\r\n       
-    oTime.Reset(); oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n       
-    {\r\n            nameOfField.SetValue(voidPtr, str);\r\n        }\r\n       
-    oTime.Stop();\r\n        DebugLog(\"ReflectionManager SetValue\uFF1A\" + oTime.Elapsed.TotalMilliseconds
-    + \" \u6BEB\u79D2\");\r\n\r\n        oTime.Reset(); oTime.Start();\r\n       
-    for (int i = 0; i < testCount; i++)\r\n        {\r\n            myClass.str =
-    str;\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"= \uFF1A\" +
-    oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n        DebugLog(\"\");\r\n       
-    DebugLog(\"====================================\");\r\n        DebugLog(\"\");\r\n\r\n\r\n       
-    oTime.Reset(); oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n       
-    {\r\n            string v = (string)nameOfField.GetValue(voidPtr);\r\n       
-    }\r\n        oTime.Stop();\r\n        DebugLog(\"ReflectionManager GetValue\uFF1A\"
-    + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n        oTime.Reset();
-    oTime.Start();\r\n        for (int i = 0; i < testCount; i++)\r\n        {\r\n           
-    string v = myClass.str;\r\n        }\r\n        oTime.Stop();\r\n        DebugLog(\"=
-    \uFF1A\" + oTime.Elapsed.TotalMilliseconds + \" \u6BEB\u79D2\");\r\n\r\n\r\n       
-    text.text = sb.ToString();\r\n    }\r\n\r\n\r\n\r\n    unsafe void Test(object
-    obj)\r\n    {\r\n        UInt64 gcHandle;\r\n        int* ptr = (int*)UnsafeUtility.PinGCObjectAndGetAddress(obj,
-    out gcHandle);\r\n        List<int> vs = new List<int>();\r\n        for (int
-    i = 0; i < 8; i++)\r\n        {\r\n            vs.Add(*(ptr + i));\r\n           
-    DebugLog(*(ptr + i));\r\n        }\r\n    }\r\n\r\n\r\n\r\n    void Update()\r\n   
-    {\r\n\r\n    }\r\n}\n"
+  m_Text: 
 --- !u!222 &1291115625
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2298,8 +2151,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 746953480}
   m_HandleRect: {fileID: 746953479}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 0.70032555
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
