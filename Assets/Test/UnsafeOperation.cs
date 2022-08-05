@@ -54,7 +54,6 @@ namespace PtrReflection
             return instanceSize;
         }
 
-
         public unsafe static bool IsCreate(Type type)
         {
             if (type.IsSubclassOf(typeof(UnityEngine.Object)))
@@ -63,6 +62,7 @@ namespace PtrReflection
             }
             return true;
         }
+
         public unsafe static IntPtr GetTypeHead(Type type)
         {
             object obj = FormatterServices.GetUninitializedObject(type);

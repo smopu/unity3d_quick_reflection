@@ -7,10 +7,11 @@ using System.Text;
 public unsafe class StringTable
 {
     StringTableLive[] lives;
-    const char Zero = '\0';  //Mo;
+    char Zero = '\0';  // '"';
 
-    public unsafe StringTable(Dictionary<string, int> strs)
+    public unsafe StringTable(Dictionary<string, int> strs, char end = '\0')
     {
+        Zero = end;
         int max = 0;
         Dictionary<int, Dictionary<string, int>> dict = new Dictionary<int, Dictionary<string, int>>();
         foreach (var item in strs)
@@ -29,7 +30,7 @@ public unsafe class StringTable
         lives = new StringTableLive[max + 1];
         foreach (var item in dict)
         {
-            lives[item.Key] = new StringTableLive(item.Value, item.Key);
+            lives[item.Key] = new StringTableLive(item.Value, item.Key, end);
         }
     }
     public int Find(char* d, int length)
@@ -65,7 +66,7 @@ public unsafe class StringTable
         char* oneChar;
 
 
-        public unsafe StringTableLive(Dictionary<string, int> stringToIndex, int length)
+        public unsafe StringTableLive(Dictionary<string, int> stringToIndex, int length, char end)
         {
             if (stringToIndex.Count == 1)
             {
@@ -79,7 +80,7 @@ public unsafe class StringTable
                 {
                     oneChar[i] = str[i];
                 }
-                oneChar[length] = Zero;
+                oneChar[length] = end;
                 return;
             }
             string[] strs = new string[stringToIndex.Count];
@@ -131,7 +132,7 @@ public unsafe class StringTable
                     //*(allChar + i * size + j) = strs[i][j];
                 }
                 //*(allChar + i * size + size - 1) = Mo;
-                allChar[i * size + size - 1] = Zero;
+                allChar[i * size + size - 1] = end;
             }
 
 

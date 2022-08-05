@@ -14,11 +14,8 @@ namespace PtrReflection
     public unsafe delegate void ActionVoidPtr<T2>(void* arg1, T2 arg2);
     public unsafe delegate void ActionVoidPtrVoidPtr(void* arg1, void* arg2);
 
-
     public unsafe delegate T2 FuncVoidPtr<T2>(void* arg1);
     public unsafe delegate void* FuncVoidPtrVoidPtr(void* arg1);
-
-
 
     [StructLayout(LayoutKind.Explicit)]
     public unsafe class PropertyDelegateItem
@@ -71,8 +68,6 @@ namespace PtrReflection
         public FuncVoidPtr<object> getObject;
         [FieldOffset(16)]
         public FuncVoidPtrVoidPtr getVoidPtr;
-
-
 
         [FieldOffset(16)]
         public FuncVoidPtr<bool> getBoolean;

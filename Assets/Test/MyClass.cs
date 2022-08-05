@@ -12,6 +12,12 @@ public class MyClass
     public string Str { get; set; }
     public Vector3 Point { get; set; }
 
+
+    public int[] ones;
+    public string[] strs;
+    public Vector3[] points;
+
+
     public Quaternion point2;
     public int point3;
     public Vector3Int point4 = new Vector3Int(2, 3, 4);

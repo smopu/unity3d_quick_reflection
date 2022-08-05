@@ -101,6 +101,7 @@ namespace PtrReflection
             }
             return wrapper;
         }
+
         static Dictionary<Type, TypeAddrReflectionWrapper> all = new Dictionary<Type, TypeAddrReflectionWrapper>();
         unsafe TypeAddrReflectionWrapper(Type type)
         {
