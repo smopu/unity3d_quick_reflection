@@ -53,12 +53,13 @@
     <UnityVersion>2019.4.31f1c1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assets\Test\ArrayWrapManager.cs" />
     <Compile Include="Assets\Test\Box.cs" />
     <Compile Include="Assets\Test\MyClass.cs" />
     <Compile Include="Assets\Test\PropertyDelegateItem2.cs" />
     <Compile Include="Assets\Test\ReflectionManager.cs" />
     <Compile Include="Assets\Test\StringTable.cs" />
-    <Compile Include="Assets\Test\Test030.cs" />
+    <Compile Include="Assets\Test\TestScript.cs" />
     <Compile Include="Assets\Test\TypeAddrWrapper.cs" />
     <Compile Include="Assets\Test\UnityCombineMeshesHack.cs" />
     <Compile Include="Assets\Test\UnsafeOperation.cs" />
