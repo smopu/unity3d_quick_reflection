@@ -8,29 +8,6 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace PtrReflection
 {
-    [StructLayout(LayoutKind.Explicit)]
-    public unsafe class UnsafeTool
-    {
-        public static UnsafeTool unsafeTool = new UnsafeTool();
-        public delegate void* ObjectToVoidPtr(object obj);
-        [FieldOffset(0)]
-        public ObjectToVoidPtr objectToVoidPtr;
-        [FieldOffset(0)]
-        Func<object, object> func;
-
-        public delegate object VoidPtrToObject(void* ptr);
-        [FieldOffset(0)]
-        public VoidPtrToObject voidPtrToObject;
-        [FieldOffset(0)]
-        Func<object, object> func2;
-
-        public UnsafeTool()
-        {
-            func = Out;
-            func2 = Out;
-        }
-        object Out(object o) { return o; }
-    }
     public unsafe static class ArrayWrapManager
     {
         public static IArrayWrap GetIArrayWrap(Type type)
@@ -76,11 +53,23 @@ namespace PtrReflection
             this.elementTypeCode = Type.GetTypeCode(elementType);
             if (rank == 1)
             {
-                this.head = *(IntPtr*)UnsafeTool.unsafeTool.objectToVoidPtr(Array.CreateInstance(elementType, 0));
+#if Use_Unsafe_Tool
+                this.head = *UnsafeTool.unsafeTool.ObjectToIntPtr(Array.CreateInstance(elementType, 0));
+#else
+                ulong gcHandle;
+                this.head = *(IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(Array.CreateInstance(elementType, 0), out gcHandle);
+                UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
             }
             else
             {
-                this.head = *(IntPtr*)UnsafeTool.unsafeTool.objectToVoidPtr(Array.CreateInstance(elementType, new int[rank]));
+#if Use_Unsafe_Tool
+                this.head = *UnsafeTool.unsafeTool.ObjectToIntPtr(Array.CreateInstance(elementType, new int[rank]));
+#else
+                ulong gcHandle;
+                this.head = *(IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(Array.CreateInstance(elementType, new int[rank]), out gcHandle);
+                UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
             }
         }
 
@@ -128,9 +117,19 @@ namespace PtrReflection
                     default:
                         //GC.Collect(); 
                         //return null;  
-                        ulong gcHandle;
+                        //ulong gcHandle;
                         object obj = new byte[this.elementTypeSize - 1 * UnsafeOperation.PTR_COUNT];
+                        //IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
+
+#if Use_Unsafe_Tool
+                        IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(obj);
+#else
+                        ulong gcHandle;
                         IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
+                        UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
+
                         if (typeHead == default(IntPtr))
                         {
                             typeHead = UnsafeOperation.GetTypeHead(elementType);
@@ -138,7 +137,7 @@ namespace PtrReflection
                         *ptr = typeHead;
                         ptr += 2;
                         UnsafeUtility.MemCpy(ptr, field, this.elementTypeSize);
-                        UnsafeUtility.ReleaseGCObject(gcHandle);
+                        //UnsafeUtility.ReleaseGCObject(gcHandle);
                         //GC.Collect();
                         return obj;
                 }
@@ -205,10 +204,15 @@ namespace PtrReflection
                         break;
                     case TypeCode.String:
                     case TypeCode.Object:
+
+#if Use_Unsafe_Tool
+                        IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(value);
+#else
                         ulong gcHandle;
                         IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(value, out gcHandle);
-                        UnsafeUtility.MemCpy(field, ptr + 2, elementTypeSize);
                         UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+                        UnsafeUtility.MemCpy(field, ptr + 2, elementTypeSize);
                         break;
                 }
             }
@@ -250,7 +254,14 @@ namespace PtrReflection
 
             object array = new byte[arrayMsize];
 
-            IntPtr* p = (IntPtr*)UnsafeTool.unsafeTool.objectToVoidPtr(array);
+#if Use_Unsafe_Tool
+            IntPtr* p = UnsafeTool.unsafeTool.ObjectToIntPtr(array);
+#else
+            ulong gcHandle;
+            IntPtr* p = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(array, out gcHandle);
+            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
             arrayWrapData.objPtr = (byte*)p;
             *p = head;
             ++p;
@@ -271,7 +282,15 @@ namespace PtrReflection
             {
                 arrayWrapData.arrayLengths[i] = array.GetLength(i);
             }
-            IntPtr* p = (IntPtr*)UnsafeTool.unsafeTool.objectToVoidPtr(array);
+#if Use_Unsafe_Tool
+            IntPtr* p = UnsafeTool.unsafeTool.ObjectToIntPtr(array);
+#else
+            ulong gcHandle;
+            IntPtr* p = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(array, out gcHandle);
+            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
+
             arrayWrapData.objPtr = (byte*)p;
             p += 2;
             arrayWrapData.startItemOffcet = ((byte*)p);
@@ -288,7 +307,14 @@ namespace PtrReflection
         {
             int arrayMsize = arrayWrapData.length * this.elementTypeSize;
             object array = new byte[arrayMsize];
-            IntPtr* p = (IntPtr*)UnsafeTool.unsafeTool.objectToVoidPtr(array);
+#if Use_Unsafe_Tool
+            IntPtr* p = UnsafeTool.unsafeTool.ObjectToIntPtr(array);
+#else
+            ulong gcHandle;
+            IntPtr* p = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(array, out gcHandle);
+            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
             arrayWrapData.objPtr = (byte*)p;
             *p = head;
             ++p;
@@ -301,10 +327,13 @@ namespace PtrReflection
         {
             ArrayWrapOutData arrayWrapData = new ArrayWrapOutData();
             arrayWrapData.length = array.Length;
-
             ulong gcHandle;
+#if Use_Unsafe_Tool
+            arrayWrapData.objPtr = UnsafeTool.unsafeTool.ObjectToVoidPtr(array);
+#else
             arrayWrapData.objPtr = UnsafeUtility.PinGCObjectAndGetAddress(array, out gcHandle);
             UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
 
             arrayWrapData.startItemOffcet = (byte*)UnsafeUtility.PinGCArrayAndGetDataAddress(array, out gcHandle);
             UnsafeUtility.ReleaseGCObject(gcHandle);

@@ -15,10 +15,14 @@ namespace PtrReflection
     public unsafe delegate void ActionVoidPtrVoidPtr(void* arg1, void* arg2);
 
     public unsafe delegate T2 FuncVoidPtr<T2>(void* arg1);
+    public unsafe delegate  float FuncVoidPtr2(void* arg1);
+    
     public unsafe delegate void* FuncVoidPtrVoidPtr(void* arg1);
+    
+
 
     [StructLayout(LayoutKind.Explicit)]
-    public unsafe class PropertyDelegateItem
+    public  unsafe partial class PropertyDelegateItem
     { 
         [FieldOffset(0)]
         public object _set;
@@ -100,14 +104,6 @@ namespace PtrReflection
         [FieldOffset(16)]
         public FuncVoidPtr<string> getString;
 
-        [FieldOffset(24)]
-        public IntPtr* getTarget;
-        [FieldOffset(24)]
-        public void** getTargetPtr;
-
-        [FieldOffset(32)]
-        public int debug = 0;
-
         //[FieldOffset(16)]
         //public Delegate get2;
         //[FieldOffset(16)]
@@ -170,55 +166,83 @@ namespace PtrReflection
             return propertyWrapper;
         }
 
-        public static unsafe Delegate CreateStructGet(Type parntType, PropertyInfo propertyInfo, out Delegate sourceDelegate)
+        delegate object GetStructDelegate<Target, Value>(Func<Target, Value> _get, Target target);
+        public static object GetStruct<Target, Value>(object t1, object t2)
+        {
+            Func<Target, Value> _get = (Func<Target, Value>)t1;
+            Target target = (Target)t2;
+            object obj = _get(target);
+            return obj;
+        }
+        
+        public static unsafe Delegate CreateStructGet(Type parntType, PropertyInfo propertyInfo)
         {
             if (parntType.IsValueType)
             {
                 var getValue = Delegate.CreateDelegate(typeof(RefFunc<,>).MakeGenericType(parntType, propertyInfo.PropertyType),
-               propertyInfo.GetGetMethod());
+                propertyInfo.GetGetMethod());
 
+#if ENABLE_MONO && !Test_Il2cpp
                 IGetStruct propertyWrapper = (IGetStruct)Activator.CreateInstance(
                     typeof(RefPropertyGetWrapper<,>).MakeGenericType(parntType, propertyInfo.PropertyType));
                 propertyWrapper.get = getValue;
-                sourceDelegate = getValue;
                 return propertyWrapper.GetDelegate();
+#else
+                return getValue;
+#endif
+
             }
             else
             {
                 var getValue = Delegate.CreateDelegate(typeof(Func<,>).MakeGenericType(parntType, propertyInfo.PropertyType),
                 propertyInfo.GetGetMethod());
 
+
+#if ENABLE_MONO && !Test_Il2cpp
                 IGetStruct propertyWrapper = (IGetStruct)Activator.CreateInstance(
                     typeof(PropertyGetWrapper<,>).MakeGenericType(parntType, propertyInfo.PropertyType));
                 propertyWrapper.get = getValue;
-                sourceDelegate = getValue;
-                return propertyWrapper.GetDelegate(); 
+                return propertyWrapper.GetDelegate();
+#else
+                return getValue;
+#endif
+                //MethodInfo methodInfo = typeof(PropertyWrapper).GetMethod(nameof(GetStruct), BindingFlags.Static | BindingFlags.Public);
+                //var methodInfo2 = methodInfo.MakeGenericMethod(parntType, propertyInfo.PropertyType);
+                //getOutStruct = (Func<object, object, object>)methodInfo2.CreateDelegate(typeof(Func<object, object, object>));
             }
         }
 
-        public static unsafe Delegate CreateStructIPropertyWrapperTarget(Type parntType, PropertyInfo propertyInfo, out Delegate sourceDelegate)
+        public static unsafe Delegate CreateStructSet(Type parntType, PropertyInfo propertyInfo)
         {
             if (parntType.IsValueType)
             {
                 var setValue = Delegate.CreateDelegate(typeof(RefAction<,>).MakeGenericType(parntType, propertyInfo.PropertyType),
                propertyInfo.GetSetMethod());
 
+#if ENABLE_MONO && !Test_Il2cpp
                 ISetStruct propertyWrapper = (ISetStruct)Activator.CreateInstance(
                     typeof(RefPropertySetWrapper<,>).MakeGenericType(parntType, propertyInfo.PropertyType));
                 propertyWrapper.set = setValue;
-                sourceDelegate = setValue;
                 return propertyWrapper.GetDelegate();
+#else
+                return setValue;
+#endif
+
             }
             else
             {
                 var setValue = Delegate.CreateDelegate(typeof(Action<,>).MakeGenericType(parntType, propertyInfo.PropertyType),
                 propertyInfo.GetSetMethod());
 
+#if ENABLE_MONO && !Test_Il2cpp
                 ISetStruct propertyWrapper = (ISetStruct)Activator.CreateInstance(
                     typeof(PropertySetWrapper<,>).MakeGenericType(parntType, propertyInfo.PropertyType));
                 propertyWrapper.set = setValue;
-                sourceDelegate = setValue;
                 return propertyWrapper.GetDelegate();
+#else
+                return setValue;
+#endif
+
             }
         }
 
@@ -238,7 +262,7 @@ namespace PtrReflection
             }
         }
 
-        public static Delegate CreateClassIPropertyWrapperTarget(Type parntType, PropertyInfo propertyInfo)
+        public static Delegate CreateClassSet(Type parntType, PropertyInfo propertyInfo)
         {
             if (parntType.IsValueType)
             {

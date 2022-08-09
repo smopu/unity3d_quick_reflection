@@ -281,11 +281,17 @@ namespace PtrReflection
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object Create(out ulong gcHandle, out byte* bytePtr)//, out byte* objPtr
+        public object Create(out byte* bytePtr)//, out byte* objPtr
         {
             object obj = new byte[sizeByte_1];
-            //IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);  
+#if Use_Unsafe_Tool
+            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(obj);
+#else
+            ulong gcHandle;
             IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
+            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
             *ptr = typeHead;
             bytePtr = (byte*)ptr;
             //--ptr;
@@ -297,11 +303,15 @@ namespace PtrReflection
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Create()//, out byte* objPtr
         {
-            ulong gcHandle;
             object obj = new byte[sizeByte_1];
+#if Use_Unsafe_Tool
+            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(obj);
+#else
+            ulong gcHandle;
             IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
-            *ptr = typeHead;
             UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+            *ptr = typeHead;
             return obj;
         }
 
@@ -312,8 +322,7 @@ namespace PtrReflection
     {
         public TypeAddrReflectionWrapper wrapper;
         //public ReadCollectionLink read;
-        //public IArrayWrap arrayWrap;
-
+        public IArrayWrap arrayWrap;
         /// <summary>
         ///  class struct
         /// </summary>
@@ -342,11 +351,16 @@ namespace PtrReflection
             if (UnsafeOperation.IsCreate(fieldOrPropertyType))
             {
                 typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
-                heapSize = UnsafeOperation.HeapSizeOf(typeHead);
+                //heapSize = UnsafeOperation.HeapSizeOf(typeHead);
             }
             else
             {
                 heapSize = 0;
+            }
+
+            if (isArray)
+            {
+                arrayWrap = ArrayWrapManager.GetIArrayWrap(fieldOrPropertyType);
             }
         }
 
@@ -368,9 +382,7 @@ namespace PtrReflection
             {
                 if (isValueType && !TypeAddrReflectionWrapper.IsFundamental(this.fieldOrPropertyType))
                 {
-                    Delegate sourceDelegate;
-                    Delegate get = PropertyWrapper.CreateStructGet(parntType,
-                        propertyInfo, out sourceDelegate);
+                    Delegate get = PropertyWrapper.CreateStructGet(parntType, propertyInfo);
                     this.propertyDelegateItem._get = get;
                 }
                 else
@@ -382,9 +394,7 @@ namespace PtrReflection
             {
                 if (isValueType && !TypeAddrReflectionWrapper.IsFundamental(this.fieldOrPropertyType))
                 {
-                    Delegate sourceDelegate;
-                    Delegate set = PropertyWrapper.CreateStructIPropertyWrapperTarget(parntType,
-                        propertyInfo, out sourceDelegate);
+                    Delegate set = PropertyWrapper.CreateStructSet(parntType, propertyInfo);
                     this.propertyDelegateItem._set = set;
 
                     //this.propertyWrapper = PropertyWrapper.CreateStructIPropertyWrapperTarget(propertyInfo);
@@ -392,16 +402,27 @@ namespace PtrReflection
                 else
                 {
                     //this.propertyDelegateItem._set = PropertyWrapper.CreateSetTargetDelegate(propertyInfo);
-                    this.propertyDelegateItem._set = PropertyWrapper.CreateClassIPropertyWrapperTarget(parntType, propertyInfo);
+                    this.propertyDelegateItem._set = PropertyWrapper.CreateClassSet(parntType, propertyInfo);
                 }
             }
 
             typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
-            //if (isEnum)
-            //{
-            //    fieldOrPropertyType = typeof(EnumWrapper<>).MakeGenericType(fieldOrPropertyType);
-            //}
-            //StartReadCollectionLink();
+            if (isArray)
+            {
+                arrayWrap = ArrayWrapManager.GetIArrayWrap(fieldOrPropertyType);
+            }
+#if ENABLE_MONO && !Test_Il2cpp
+#else
+            if (isValueType)
+            {
+                stackSize = UnsafeUtility.SizeOf(fieldOrPropertyType);
+                structPropertyIndex = stackSize / PropertyDelegateItemIL2Cpp.AilSize + 1;
+            }
+            else
+            {
+                stackSize = UnsafeOperation.PTR_COUNT;
+            }
+#endif
         }
 
 
@@ -418,13 +439,26 @@ namespace PtrReflection
         public int heapSize;
         public TypeCode typeCode;
         
-
         public bool isPropertySet = true;
         public bool isPropertyGet = true;
         public PropertyInfo propertyInfo;
         public PropertyDelegateItem propertyDelegateItem;
         public IPropertyWrapperTarget propertyWrapper;
 
+#if ENABLE_MONO && !Test_Il2cpp
+#else
+        int structPropertyIndex = 0;
+        public unsafe T GetPropertyObject<T>(void* obj) where T : struct
+        {
+            return PropertyDelegateItemIL2Cpp.GetObject<T>(propertyDelegateItem, obj, structPropertyIndex);
+        }
+        public unsafe void SetPropertyObject<T>(void* obj, T value) where T : struct
+        {
+            byte* buffer = stackalloc byte[structPropertyIndex * PropertyDelegateItemIL2Cpp.AilSize];
+            UnsafeUtility.MemCpy(buffer, UnsafeUtility.AddressOf(ref value), stackSize);
+            PropertyDelegateItemIL2Cpp.SetObject(propertyDelegateItem, obj, buffer, structPropertyIndex);
+        }
+#endif
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -485,6 +519,26 @@ namespace PtrReflection
                             break;
                         //case TypeCode.String:
                         case TypeCode.Object:
+#if ENABLE_MONO && !Test_Il2cpp
+                            propertyDelegateItem.setObject(source, value);
+#else
+    #if Use_Unsafe_Tool
+                            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(value);
+
+    #else
+                            ulong gcHandle;
+                            IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(value, out gcHandle);
+                            UnsafeUtility.ReleaseGCObject(gcHandle);
+    #endif
+
+                            byte* buffer = stackalloc byte[structPropertyIndex * PropertyDelegateItemIL2Cpp.AilSize];
+                            UnsafeUtility.MemCpy(buffer, ptr + 2, stackSize);
+                            PropertyDelegateItemIL2Cpp.SetObject(propertyDelegateItem, source, buffer, structPropertyIndex);
+#endif
+
+
+
+
                             //ulong gcHandle;
                             //IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(value, out gcHandle);
                             ////float* ptr2 = (float*)(ptr + 2);
@@ -496,7 +550,6 @@ namespace PtrReflection
                             //UnsafeUtility.MemCpy(field, ptr + 2, stackSize);
                             //UnsafeUtility.ReleaseGCObject(gcHandle);
 
-                            propertyDelegateItem.setObject(source, value);
                             break;
                     }
                 }
@@ -561,16 +614,15 @@ namespace PtrReflection
                             break;
                         case TypeCode.String:
                         case TypeCode.Object:
+#if Use_Unsafe_Tool
+                            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(value);
+#else
                             ulong gcHandle;
                             IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(value, out gcHandle);
-                            //float* ptr2 = (float*)(ptr + 2);
-                            //UnityEngine.Debug.Log(value); 
-                            //UnityEngine.Debug.Log(*ptr2); ++ptr2;
-                            //UnityEngine.Debug.Log(*ptr2); ++ptr2; 
-                            //UnityEngine.Debug.Log(*ptr2);
+                            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
 
                             UnsafeUtility.MemCpy(field, ptr + 2, stackSize);
-                            UnsafeUtility.ReleaseGCObject(gcHandle);
                             break;
                     }
                 }
@@ -628,20 +680,27 @@ namespace PtrReflection
                             return propertyDelegateItem.getUInt64(source);
                         case TypeCode.Object:
                         default:
+#if ENABLE_MONO && !Test_Il2cpp
                             return propertyDelegateItem.getObject(source);
-                            ////GC.Collect(); 
-                            ////return null;  
-                            //ulong gcHandle;
-                            //object obj = new byte[this.heapSize - 1 * UnsafeOperation.PTR_COUNT];
-                            ////IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
-                            //IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
-                            ////*(IntPtr*)ptr = typeHead; 
-                            //*ptr = typeHead;
-                            //ptr += 2;
-                            //UnsafeUtility.MemCpy(ptr, field, this.stackSize);
-                            //UnsafeUtility.ReleaseGCObject(gcHandle);
-                            ////GC.Collect();
-                            //return obj;
+#else
+                            object od = PropertyDelegateItemIL2Cpp.GetObject(propertyDelegateItem, source, structPropertyIndex);
+                            object obj = new byte[this.stackSize - 1 * UnsafeOperation.PTR_COUNT];
+#if Use_Unsafe_Tool
+                            IntPtr* ptr1 = UnsafeTool.unsafeTool.ObjectToIntPtr(od);
+                            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(obj);
+#else
+                            ulong gcHandle;
+                            IntPtr* ptr1 = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(od, out gcHandle);
+                            UnsafeUtility.ReleaseGCObject(gcHandle);
+                            IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
+                            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+                            ptr1 += 2;
+                            *ptr = typeHead;
+                            ptr += 2;
+                            UnsafeUtility.MemCpy(ptr, ptr1, this.stackSize);
+                            return obj;
+#endif
                     }
                 }
                 else
@@ -695,15 +754,18 @@ namespace PtrReflection
                         default:
                             //GC.Collect(); 
                             //return null;  
+                            object obj = new byte[this.stackSize - 1 * UnsafeOperation.PTR_COUNT];
+
+#if Use_Unsafe_Tool
+                            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(obj);
+#else
                             ulong gcHandle;
-                            object obj = new byte[this.heapSize - 1 * UnsafeOperation.PTR_COUNT];
-                            //IntPtr* ptr = (IntPtr*)GeneralTool.ObjectToVoid(obj);
                             IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
-                            //*(IntPtr*)ptr = typeHead; 
+                            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
                             *ptr = typeHead;
                             ptr += 2;
                             UnsafeUtility.MemCpy(ptr, field, this.stackSize);
-                            UnsafeUtility.ReleaseGCObject(gcHandle);
                             //GC.Collect();
                             return obj;
                     }

@@ -66,9 +66,16 @@ namespace PtrReflection
         public unsafe static IntPtr GetTypeHead(Type type)
         {
             object obj = FormatterServices.GetUninitializedObject(type);
+
+#if Use_Unsafe_Tool
+            void* ptr = UnsafeTool.unsafeTool.ObjectToVoidPtr(obj);
+#else
+
             ulong gcHandle;
             void* ptr = UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
             UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
             return *(IntPtr*)ptr;
         }
 

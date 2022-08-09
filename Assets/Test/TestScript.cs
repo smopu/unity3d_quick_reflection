@@ -37,7 +37,9 @@ public class TestScript : MonoBehaviour
 
     private unsafe void Start()
     {
+        //DynamicCreateType();
     }
+
 
 
     public unsafe void RunTest2()
@@ -46,19 +48,32 @@ public class TestScript : MonoBehaviour
         sb = new StringBuilder();
         //MyClass myClass = new MyClass();
 
+        DebugLog("开始 " );
+        text.text = sb.ToString();
+
         string fieldName = "One";
 
-        ulong gcHandle;
         byte* bytePtr;
 
-        var warp = TypeAddrReflectionWrapper.GetWrapper(typeof(MyClass));
 
-        //bytePtr = (byte*)UnsafeUtility.PinGCObjectAndGetAddress(ccc, out gcHandle);
-        var instens = (MyClass)warp.Create(out gcHandle, out bytePtr);
+        var instens = new MyClass();// (MyClass)warp.Create(out bytePtr);
+
+#if Use_Unsafe_Tool
+        bytePtr = UnsafeTool.unsafeTool.ObjectToBytePtr(instens);
+#else
+        ulong gcHandle;
+        bytePtr = (byte*)UnsafeUtility.PinGCObjectAndGetAddress(instens, out gcHandle);
+        UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+
+
+
         DebugLog("创建 " + instens.GetType());
         instens.str = "S3ED";
         instens.one = 1;
         instens.point = new Vector3(3, -4.5f, 97.4f);
+        var warp = TypeAddrReflectionWrapper.GetWrapper(typeof(MyClass));
+        DebugLog("warp ");
 
         fieldName = "one";
         fixed (char* fieldNamePtr = fieldName)
@@ -76,6 +91,7 @@ public class TestScript : MonoBehaviour
             addr.SetValue(bytePtr, 444);
             DebugLog("不指定类型赋值后 输出 444 : " + instens.one);
         }
+        //goto End;
 
         fieldName = "str";
         fixed (char* fieldNamePtr = fieldName)
@@ -85,7 +101,11 @@ public class TestScript : MonoBehaviour
             string value = UnsafeUtility.ReadArrayElement<string>(bytePtr + addr.offset, 0);
             DebugLog("取值后 输出 S3ED : " + value);
 
+#if ENABLE_MONO && !Test_Il2cpp
+            UnsafeTool.unsafeTool.SetObject(bytePtr + addr.offset, "Acfv");
+#else
             UnsafeUtility.CopyObjectAddressToPtr("Acfv", bytePtr + addr.offset);
+#endif
             DebugLog("赋值后 输出 Acfv : " + instens.str);
 
             object obj = addr.GetValue(bytePtr);
@@ -107,7 +127,6 @@ public class TestScript : MonoBehaviour
             UnsafeUtility.WriteArrayElement<Vector3>(bytePtr + addr.offset, 0, pt);
             //下面一行也可以
             //UnsafeUtility.MemCpy(bytePtr + addr.offset, UnsafeUtility.AddressOf(ref pt), addr.stackSize);
-
 
             DebugLog("赋值后 输出 -99.56, 50.22, 9 : " + instens.point);
 
@@ -166,23 +185,35 @@ public class TestScript : MonoBehaviour
         fixed (char* fieldNamePtr = fieldName)
         {
             TypeAddrFieldAndProperty addr = warp.Find(fieldNamePtr, fieldName.Length);
-
+#if ENABLE_MONO && !Test_Il2cpp
             Vector3 value = (Vector3)addr.propertyDelegateItem.getObject(bytePtr);
+#else
+            Vector3 value = addr.GetPropertyObject<Vector3>(bytePtr);
+#endif
             DebugLog("取值后 输出 3, -4.5, 97.4 : " + value);
 
             var pt = new Vector3(-99.56f, 50.22f, 9f);
+#if ENABLE_MONO && !Test_Il2cpp
             addr.propertyDelegateItem.setObject(bytePtr, pt);
-            DebugLog("赋值后 输出 -99.56, 50.22, 9 : " + instens.Str);
+#else
+
+            addr.SetPropertyObject<Vector3>(bytePtr, pt);
+#endif
+            DebugLog("赋值后 输出 -99.56, 50.22, 9 : " + instens.Point);
 
             object obj = addr.GetValue(bytePtr);
             DebugLog("不指定类型取值后 输出 -99.56, 50.22, 9 : " + obj);
 
             addr.SetValue(bytePtr, new Vector3(0, -9999f, 12.888f));
-            DebugLog("不指定类型赋值后 输出 0, -9999 , 12.888 : " + instens.point);
+            DebugLog("不指定类型赋值后 输出 0, -9999 , 12.888 : " + instens.Point);
         }
 
+        DebugLog(" ");
+        DebugLog("====↓↓↓↓ 数组 ↓↓↓↓===== ");
+        DebugLog(" ");
+
         instens.ones = new int[] { 1, 2, 8, 476, 898, 9 };
-        instens.strs = new string[] {"ass","#$%^&","*SAHASww&()", "兀驦屮鲵傌" };
+        instens.strs = new string[] {"ass","#$%^&","*SAHASww&()", "DDD@@" };
         instens.points = new Vector3[] {
             new Vector3(3, -4.5f, 97.4f),
             new Vector3(9999f, -43f, 0.019f),
@@ -193,7 +224,7 @@ public class TestScript : MonoBehaviour
         fixed (char* fieldNamePtr = fieldName)
         {
             TypeAddrFieldAndProperty addr = warp.Find(fieldNamePtr, fieldName.Length);
-            var arrayWrap = ArrayWrapManager.GetIArrayWrap(addr.fieldOrPropertyType);
+            var arrayWrap = addr.arrayWrap;
 
             Array array = (Array)addr.GetValue(bytePtr);
             ArrayWrapOutData arrayWrapOutData = arrayWrap.GetArrayData(array);
@@ -215,7 +246,6 @@ public class TestScript : MonoBehaviour
                 DebugLog(array.GetValue(i));
             }
 
-            object obj = addr.GetValue(bytePtr);
             DebugLog("不指定类型取值后 输出 0, 1, 2, 3, 4, 5 : ");
             for (int i = 0; i < arrayWrapOutData.length; i++)
             {
@@ -238,12 +268,13 @@ public class TestScript : MonoBehaviour
         fixed (char* fieldNamePtr = fieldName)
         {
             TypeAddrFieldAndProperty addr = warp.Find(fieldNamePtr, fieldName.Length);
-            var arrayWrap = ArrayWrapManager.GetIArrayWrap(addr.fieldOrPropertyType);
+            //var arrayWrap = ArrayWrapManager.GetIArrayWrap(addr.fieldOrPropertyType);
+            var arrayWrap = addr.arrayWrap;
 
             Array array = (Array)addr.GetValue(bytePtr);
             ArrayWrapOutData arrayWrapOutData = arrayWrap.GetArrayData(array);
 
-            DebugLog("取值后 输出 ass,#$%^&,*SAHASww&(), 兀驦屮鲵傌 : ");
+            DebugLog("取值后 输出 ass,#$%^&,*SAHASww&(), DDD@@ : ");
             for (int i = 0; i < arrayWrapOutData.length; i++)
             {
                 string value = UnsafeUtility.ReadArrayElement<string>(arrayWrapOutData.startItemOffcet, i);
@@ -254,8 +285,12 @@ public class TestScript : MonoBehaviour
 
             for (int i = 0; i < arrayWrapOutData.length; i++)
             {
+#if ENABLE_MONO && !Test_Il2cpp
+                UnsafeTool.unsafeTool.SetObject(arrayWrapOutData.startItemOffcet + arrayWrap.elementTypeSize * i, "Ac4……*" + i);
+#else
                 UnsafeUtility.CopyObjectAddressToPtr("Ac4……*" + i, arrayWrapOutData.startItemOffcet + arrayWrap.elementTypeSize * i);
-                //下面一行也可以
+#endif
+                //下面1行也可以
                 // UnsafeUtility.WriteArrayElement<string>(arrayWrapOutData.startItemOffcet, i, "Ac4……*" + i);
             }
             DebugLog("赋值后 输出  Ac4……*0, Ac4……*1, Ac4……*2, Ac4……*3  : ");
@@ -288,8 +323,8 @@ public class TestScript : MonoBehaviour
         fixed (char* fieldNamePtr = fieldName)
         {
             TypeAddrFieldAndProperty addr = warp.Find(fieldNamePtr, fieldName.Length);
-            var arrayWrap = ArrayWrapManager.GetIArrayWrap(addr.fieldOrPropertyType);
-
+            var arrayWrap = addr.arrayWrap;
+            
             Array array = (Array)addr.GetValue(bytePtr);
             ArrayWrapOutData arrayWrapOutData = arrayWrap.GetArrayData(array);
 
@@ -339,11 +374,9 @@ public class TestScript : MonoBehaviour
 
 
 
-
+        End:
 
         text.text = sb.ToString();
-
-        UnsafeUtility.ReleaseGCObject(gcHandle);
 
         GC.Collect();
         return;
@@ -367,9 +400,8 @@ public class TestScript : MonoBehaviour
         string fieldName = "str";
         int nameSize = fieldName.Length;
 
-        ulong gcHandle;
         byte* bytePtr;
-        myClass = (MyClass)warp.Create(out gcHandle, out bytePtr);
+        myClass = (MyClass)warp.Create(out bytePtr);
 
 
         string str = "hello world";
@@ -420,11 +452,17 @@ public class TestScript : MonoBehaviour
         DebugLog("ReflectionManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
         oTime.Reset(); oTime.Start();
+        void* pointPtr = UnsafeUtility.AddressOf(ref point);
         for (int i = 0; i < testCount; i++)
         {
+#if Use_Unsafe_Tool
+            UnsafeTool.unsafeTool.SetObject(bytePtr + addr1.offset, str);
+#else
             UnsafeUtility.CopyObjectAddressToPtr(str, bytePtr + addr1.offset);
+#endif
             *(int*)(bytePtr + addr2.offset) = 18;
-            UnsafeUtility.MemCpy(bytePtr + addr3.offset, UnsafeUtility.AddressOf(ref point), addr3.stackSize);
+            // GeneralTool.Memcpy(bytePtr + addr3.offset, pointPtr, addr3.stackSize);
+            UnsafeUtility.MemCpy(bytePtr + addr3.offset, pointPtr, addr3.stackSize);
         }
         oTime.Stop();
         DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
@@ -536,7 +574,12 @@ public class TestScript : MonoBehaviour
         {
             warp.nameOfField[nameof(MyClass.Str)].propertyDelegateItem.setString(bytePtr, str);
             warp.nameOfField[nameof(MyClass.One)].propertyDelegateItem.setInt32(bytePtr, 18);
+#if ENABLE_MONO && !Test_Il2cpp
             warp.nameOfField[nameof(MyClass.Point)].propertyDelegateItem.setObject(bytePtr, point);
+#else
+
+            warp.nameOfField[nameof(MyClass.One)].SetPropertyObject<Vector3>(bytePtr, point);
+#endif
         }
         oTime.Stop();
         DebugLog("ReflectionManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
@@ -546,7 +589,12 @@ public class TestScript : MonoBehaviour
         {
             addr1.propertyDelegateItem.setString(bytePtr, str);
             addr2.propertyDelegateItem.setInt32(bytePtr, 18);
+#if ENABLE_MONO && !Test_Il2cpp
             addr3.propertyDelegateItem.setObject(bytePtr, point);
+#else
+            addr3.SetPropertyObject<Vector3>(bytePtr, point);
+#endif
+
         }
         oTime.Stop();
         DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
@@ -592,7 +640,11 @@ public class TestScript : MonoBehaviour
         {
             v1 = warp.nameOfField[nameof(MyClass.Str)].propertyDelegateItem.getString(bytePtr);
             v2 = warp.nameOfField[nameof(MyClass.One)].propertyDelegateItem.getInt32(bytePtr);
+#if ENABLE_MONO && !Test_Il2cpp
             v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].propertyDelegateItem.getObject(bytePtr);
+#else
+            v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].GetPropertyObject<Vector3>(bytePtr);
+#endif
         }
         oTime.Stop();
         DebugLog("ReflectionManager GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
@@ -602,7 +654,11 @@ public class TestScript : MonoBehaviour
         {
             v1 = addr1.propertyDelegateItem.getString(bytePtr);
             v2 = addr2.propertyDelegateItem.getInt32(bytePtr);
+#if ENABLE_MONO && !Test_Il2cpp
             v3 = (Vector3)addr3.propertyDelegateItem.getObject(bytePtr);
+#else
+            v3 = (Vector3)addr3.GetPropertyObject<Vector3>(bytePtr);
+#endif
         }
         oTime.Stop();
         DebugLog("ReflectionManager GetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
@@ -892,26 +948,53 @@ public class TestScript : MonoBehaviour
 
         text.text = sb.ToString();
 
-        UnsafeUtility.ReleaseGCObject(gcHandle);
         GC.Collect();
     }
 
 
 
-    unsafe void Test(object obj)
-    {
-        UInt64 gcHandle;
-        int* ptr = (int*)UnsafeUtility.PinGCObjectAndGetAddress(obj, out gcHandle);
-        List<int> vs = new List<int>();
-        for (int i = 0; i < 8; i++)
-        {
-            vs.Add(*(ptr + i));
-            DebugLog(*(ptr + i));
-        }
-    }
+    //public static Type DynamicCreateType()
+    //{
+    //    //动态创建程序集
+    //    AssemblyName DemoName = new AssemblyName("DynamicCustomReflection");
+    //    AssemblyBuilder dynamicAssembly = AppDomain.CurrentDomain.DefineDynamicAssembly(DemoName, AssemblyBuilderAccess.RunAndSave);
+    //    //动态创建模块
+    //    ModuleBuilder mb = dynamicAssembly.DefineDynamicModule(DemoName.Name, DemoName.Name + ".dll");
+    //    //动态创建类MyClass
+    //    TypeBuilder tb = mb.DefineType("GeneralTool", TypeAttributes.Public);
 
+    //    MethodBuilder mainMethodBuilder2 = tb.DefineMethod("SetObject", MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard,
+    //         null, new Type[] { typeof(void*), typeof(object) }
+    //        );
 
+    //    ILGenerator ilGenerator = mainMethodBuilder2.GetILGenerator();
+    //    ilGenerator.Emit(OpCodes.Ldarg_0);
+    //    ilGenerator.Emit(OpCodes.Ldarg_1);
+    //    ilGenerator.Emit(OpCodes.Stobj, typeof(object));
+    //    ilGenerator.Emit(OpCodes.Ret);
 
+    //    MethodBuilder mainMethodBuilder5 = tb.DefineMethod("Memcpy", MethodAttributes.Static | MethodAttributes.Public, CallingConventions.Standard,
+    //          null, new Type[] { typeof(void*), typeof(void*), typeof(int) }
+    //        );
+
+    //    ILGenerator ilGenerator5 = mainMethodBuilder5.GetILGenerator();
+    //    ilGenerator5.Emit(OpCodes.Ldarg_0);
+    //    ilGenerator5.Emit(OpCodes.Ldarg_1);
+    //    ilGenerator5.Emit(OpCodes.Ldarg_2);
+    //    ilGenerator5.Emit(OpCodes.Cpblk);
+    //    ilGenerator5.Emit(OpCodes.Ret);
+    //    mainMethodBuilder5.DefineParameter(1, ParameterAttributes.None, "destination");
+    //    mainMethodBuilder5.DefineParameter(2, ParameterAttributes.None, "source");
+    //    mainMethodBuilder5.DefineParameter(3, ParameterAttributes.None, "byteCount");
+
+    //    //使用动态类创建类型
+    //    Type classType = tb.CreateType();
+    //    //保存动态创建的程序集 (程序集将保存在程序目录下调试时就在Debug下)
+    //    dynamicAssembly.Save(DemoName.Name + ".dll");
+    //    //创建类
+    //    return classType;
+    //}
+     
     void Update()
     {
 
