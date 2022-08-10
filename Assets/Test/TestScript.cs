@@ -393,562 +393,619 @@ public class TestScript : MonoBehaviour
     MyClass myClass;
     public unsafe void RunTest()
     {
-        testCount = int.Parse(input.text);
-        sb = new StringBuilder();
-        var warp = TypeAddrReflectionWrapper.GetWrapper(typeof(MyClass));
+        var fieldName_str = nameof(MyClass.str);
+        var fieldName_one = nameof(MyClass.one);
+        var fieldName_point = nameof(MyClass.point);
 
-        string fieldName = "str";
-        int nameSize = fieldName.Length;
+        var fieldName_strLength = fieldName_str.Length;
+        var fieldName_oneLength = fieldName_one.Length;
+        var fieldName_pointLength = fieldName_point.Length;
 
-        byte* bytePtr;
-        myClass = (MyClass)warp.Create(out bytePtr);
+        var fieldName_Str = nameof(MyClass.Str);
+        var fieldName_One = nameof(MyClass.One);
+        var fieldName_Point = nameof(MyClass.Point);
+
+        var fieldName_StrLength = fieldName_Str.Length;
+        var fieldName_OneLength = fieldName_One.Length;
+        var fieldName_PointLength = fieldName_Point.Length;
 
 
-        string str = "hello world";
-        Vector3 point = new Vector3(99.2f, -98.2f, 3.2f);
-        DebugLog("");
-        DebugLog("循环" + testCount + "次");
-        DebugLog("====================================");
-        DebugLog("");
-
-        //fieldName = "one";
-        //nameSize = fieldName.Length;
-
-        var addr1 = warp.nameOfField[nameof(MyClass.str)];
-        var addr2 = warp.nameOfField[nameof(MyClass.one)];
-        var addr3 = warp.nameOfField[nameof(MyClass.point)];
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
+        fixed (char* _str = fieldName_str)
+        fixed (char* _one = fieldName_one)
+        fixed (char* _point = fieldName_point)
+        fixed (char* _Str = fieldName_Str)
+        fixed (char* _One = fieldName_One)
+        fixed (char* _Point = fieldName_Point)
         {
-            typeof(MyClass).GetField(nameof(MyClass.str)).SetValue(myClass, str);
-            typeof(MyClass).GetField(nameof(MyClass.one)).SetValue(myClass, 18);
-            typeof(MyClass).GetField(nameof(MyClass.point)).SetValue(myClass, point);
-        }
-        oTime.Stop();
-        DebugLog("FieldInfo SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            testCount = int.Parse(input.text);
+            sb = new StringBuilder();
+            var warp = TypeAddrReflectionWrapper.GetWrapper(typeof(MyClass));
+
+            string fieldName = "str";
+            int nameSize = fieldName.Length;
+
+            byte* bytePtr;
+            myClass = (MyClass)warp.Create(out bytePtr);
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            warp.nameOfField[nameof(MyClass.str)].SetValue(bytePtr, str);
-            warp.nameOfField[nameof(MyClass.one)].SetValue(bytePtr, 18);
-            warp.nameOfField[nameof(MyClass.point)].SetValue(bytePtr, point);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            string str = "hello world";
+            Vector3 point = new Vector3(99.2f, -98.2f, 3.2f);
+            DebugLog("");
+            DebugLog("循环" + testCount + "次");
+            DebugLog("====================================");
+            DebugLog("");
+
+            //fieldName = "one";
+            //nameSize = fieldName.Length;
+
+            var addr1 = warp.Find(_str, fieldName_strLength);
+            var addr2 = warp.Find(_one, fieldName_oneLength);
+            var addr3 = warp.Find(_point, fieldName_pointLength);
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                typeof(MyClass).GetField(nameof(MyClass.str)).SetValue(myClass, str);
+                typeof(MyClass).GetField(nameof(MyClass.one)).SetValue(myClass, 18);
+                typeof(MyClass).GetField(nameof(MyClass.point)).SetValue(myClass, point);
+            }
+            oTime.Stop();
+            DebugLog("FieldInfo SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            UnsafeUtility.CopyObjectAddressToPtr(str, bytePtr + warp.nameOfField[nameof(MyClass.str)].offset);
-            *(int*)(bytePtr + warp.nameOfField[nameof(MyClass.one)].offset) = 18;
-            var addr = warp.nameOfField[nameof(MyClass.point)];
-            UnsafeUtility.MemCpy(bytePtr + addr.offset, UnsafeUtility.AddressOf(ref point), addr.stackSize);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                warp.nameOfField[nameof(MyClass.str)].SetValue(bytePtr, str);
+                warp.nameOfField[nameof(MyClass.one)].SetValue(bytePtr, 18);
+                warp.nameOfField[nameof(MyClass.point)].SetValue(bytePtr, point);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 使用object类型 string查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        oTime.Reset(); oTime.Start();
-        void* pointPtr = UnsafeUtility.AddressOf(ref point);
-        for (int i = 0; i < testCount; i++)
-        {
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                warp.Find(_str, fieldName_strLength).SetValue(bytePtr, str);
+                warp.Find(_one, fieldName_oneLength).SetValue(bytePtr, 18);
+                warp.Find(_point, fieldName_pointLength).SetValue(bytePtr, point);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 使用object类型 char*查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                UnsafeUtility.CopyObjectAddressToPtr(str, bytePtr + warp.Find(_str, fieldName_strLength).offset);
+                *(int*)(bytePtr + warp.Find(_one, fieldName_oneLength).offset) = 18;
+                var addr = warp.Find(_point, fieldName_pointLength);
+                UnsafeUtility.MemCpy(bytePtr + addr.offset, UnsafeUtility.AddressOf(ref point), addr.stackSize);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            void* pointPtr = UnsafeUtility.AddressOf(ref point);
+            for (int i = 0; i < testCount; i++)
+            {
 #if Use_Unsafe_Tool
-            UnsafeTool.unsafeTool.SetObject(bytePtr + addr1.offset, str);
+                UnsafeTool.unsafeTool.SetObject(bytePtr + addr1.offset, str);
 #else
             UnsafeUtility.CopyObjectAddressToPtr(str, bytePtr + addr1.offset);
 #endif
-            *(int*)(bytePtr + addr2.offset) = 18;
-            // GeneralTool.Memcpy(bytePtr + addr3.offset, pointPtr, addr3.stackSize);
-            UnsafeUtility.MemCpy(bytePtr + addr3.offset, pointPtr, addr3.stackSize);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+                *(int*)(bytePtr + addr2.offset) = 18;
+                // GeneralTool.Memcpy(bytePtr + addr3.offset, pointPtr, addr3.stackSize);
+                UnsafeUtility.MemCpy(bytePtr + addr3.offset, pointPtr, addr3.stackSize);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            myClass.one = 18;
-            myClass.str = str;
-            myClass.point = point;
-        }
-        oTime.Stop();
-        DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                myClass.one = 18;
+                myClass.str = str;
+                myClass.point = point;
+            }
+            oTime.Stop();
+            DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        DebugLog("");
-        DebugLog("====================================");
-        DebugLog("");
-
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = (string)typeof(MyClass).GetField(nameof(MyClass.str)).GetValue(myClass);
-            v2 = (int)typeof(MyClass).GetField(nameof(MyClass.one)).GetValue(myClass);
-            v3 = (Vector3)typeof(MyClass).GetField(nameof(MyClass.point)).GetValue(myClass);
-        }
-        oTime.Stop();
-        DebugLog("FieldInfo GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            DebugLog("");
+            DebugLog("====================================");
+            DebugLog("");
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = (string)warp.nameOfField[nameof(MyClass.str)].GetValue(bytePtr);
-            v2 = (int)warp.nameOfField[nameof(MyClass.one)].GetValue(bytePtr);
-            v3 = (Vector3)warp.nameOfField[nameof(MyClass.point)].GetValue(bytePtr);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = (string)typeof(MyClass).GetField(nameof(MyClass.str)).GetValue(myClass);
+                v2 = (int)typeof(MyClass).GetField(nameof(MyClass.one)).GetValue(myClass);
+                v3 = (Vector3)typeof(MyClass).GetField(nameof(MyClass.point)).GetValue(myClass);
+            }
+            oTime.Stop();
+            DebugLog("FieldInfo GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = (string)warp.nameOfField[nameof(MyClass.str)].GetValue(bytePtr);
+                v2 = (int)warp.nameOfField[nameof(MyClass.one)].GetValue(bytePtr);
+                v3 = (Vector3)warp.nameOfField[nameof(MyClass.point)].GetValue(bytePtr);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue 使用object类型 string查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = UnsafeUtility.ReadArrayElement<string>(bytePtr + warp.nameOfField[nameof(MyClass.str)].offset, 0);
-            v2 = *(int*)(bytePtr + warp.nameOfField[nameof(MyClass.one)].offset);
-            v3 = UnsafeUtility.ReadArrayElement<Vector3>(bytePtr + warp.nameOfField[nameof(MyClass.point)].offset, 0);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = UnsafeUtility.ReadArrayElement<string>(bytePtr + addr1.offset, 0);
-            v2 = *(int*)(bytePtr + addr2.offset);
-            v3 = UnsafeUtility.ReadArrayElement<Vector3>(bytePtr + addr3.offset, 0);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager GetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = (string)warp.Find(_str, fieldName_strLength).GetValue(bytePtr);
+                v2 = (int)warp.Find(_one, fieldName_oneLength).GetValue(bytePtr);
+                v3 = (Vector3)warp.Find(_point, fieldName_pointLength).GetValue(bytePtr);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue 使用object类型 char*查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = myClass.str;
-            v2 = myClass.one;
-            v3 = myClass.point;
-        }
-        oTime.Stop();
-        DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = UnsafeUtility.ReadArrayElement<string>(bytePtr + warp.Find(_str, fieldName_strLength).offset, 0);
+                v2 = *(int*)(bytePtr + warp.Find(_one, fieldName_oneLength).offset);
+                v3 = UnsafeUtility.ReadArrayElement<Vector3>(bytePtr + warp.Find(_point, fieldName_pointLength).offset, 0);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = UnsafeUtility.ReadArrayElement<string>(bytePtr + addr1.offset, 0);
+                v2 = *(int*)(bytePtr + addr2.offset);
+                v3 = UnsafeUtility.ReadArrayElement<Vector3>(bytePtr + addr3.offset, 0);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
 
-        DebugLog("");
-        DebugLog("=========↓↓↓Property↓↓↓=============");
-        DebugLog("");
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = myClass.str;
+                v2 = myClass.one;
+                v3 = myClass.point;
+            }
+            oTime.Stop();
+            DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        addr1 = warp.nameOfField[nameof(MyClass.Str)];
-        addr2 = warp.nameOfField[nameof(MyClass.One)];
-        addr3 = warp.nameOfField[nameof(MyClass.Point)];
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            typeof(MyClass).GetProperty(nameof(MyClass.Str)).SetValue(myClass, str);
-            typeof(MyClass).GetProperty(nameof(MyClass.One)).SetValue(myClass, 18);
-            typeof(MyClass).GetProperty(nameof(MyClass.Point)).SetValue(myClass, point);
-        }
-        oTime.Stop();
-        DebugLog("PropertyInfo SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            warp.nameOfField[nameof(MyClass.Str)].SetValue(bytePtr, str);
-            warp.nameOfField[nameof(MyClass.One)].SetValue(bytePtr, 18);
-            warp.nameOfField[nameof(MyClass.Point)].SetValue(bytePtr, point);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            warp.nameOfField[nameof(MyClass.Str)].propertyDelegateItem.setString(bytePtr, str);
-            warp.nameOfField[nameof(MyClass.One)].propertyDelegateItem.setInt32(bytePtr, 18);
+            DebugLog("");
+            DebugLog("=========↓↓↓Property↓↓↓=============");
+            DebugLog("");
+
+            addr1 = warp.Find(_Str, fieldName_StrLength);
+            addr2 = warp.Find(_One, fieldName_OneLength);
+            addr3 = warp.Find(_Point, fieldName_PointLength);
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                typeof(MyClass).GetProperty(nameof(MyClass.Str)).SetValue(myClass, str);
+                typeof(MyClass).GetProperty(nameof(MyClass.One)).SetValue(myClass, 18);
+                typeof(MyClass).GetProperty(nameof(MyClass.Point)).SetValue(myClass, point);
+            }
+            oTime.Stop();
+            DebugLog("PropertyInfo SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                warp.nameOfField[nameof(MyClass.Str)].SetValue(bytePtr, str);
+                warp.nameOfField[nameof(MyClass.One)].SetValue(bytePtr, 18);
+                warp.nameOfField[nameof(MyClass.Point)].SetValue(bytePtr, point);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 使用object类型 string查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                warp.Find(_Str, fieldName_StrLength).SetValue(bytePtr, str);
+                warp.Find(_One, fieldName_OneLength).SetValue(bytePtr, 18);
+                warp.Find(_Point, fieldName_PointLength).SetValue(bytePtr, point);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 使用object类型 char*查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                warp.Find(_Str, fieldName_StrLength).propertyDelegateItem.setString(bytePtr, str);
+                warp.Find(_One, fieldName_OneLength).propertyDelegateItem.setInt32(bytePtr, 18);
 #if ENABLE_MONO && !Test_Il2cpp
-            warp.nameOfField[nameof(MyClass.Point)].propertyDelegateItem.setObject(bytePtr, point);
+                warp.Find(_Point, fieldName_PointLength).propertyDelegateItem.setObject(bytePtr, point);
 #else
 
-            warp.nameOfField[nameof(MyClass.One)].SetPropertyObject<Vector3>(bytePtr, point);
+            warp.Find(_One, fieldName_OneLength).SetPropertyObject<Vector3>(bytePtr, point);
 #endif
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            addr1.propertyDelegateItem.setString(bytePtr, str);
-            addr2.propertyDelegateItem.setInt32(bytePtr, 18);
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                addr1.propertyDelegateItem.setString(bytePtr, str);
+                addr2.propertyDelegateItem.setInt32(bytePtr, 18);
 #if ENABLE_MONO && !Test_Il2cpp
-            addr3.propertyDelegateItem.setObject(bytePtr, point);
+                addr3.propertyDelegateItem.setObject(bytePtr, point);
 #else
             addr3.SetPropertyObject<Vector3>(bytePtr, point);
 #endif
 
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = myClass.Str;
-            v2 = myClass.One;
-            v3 = myClass.Point;
-        }
-        oTime.Stop();
-        DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-
-        DebugLog("");
-        DebugLog("====================================");
-        DebugLog("");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = (string)typeof(MyClass).GetProperty(nameof(MyClass.Str)).GetValue(myClass);
-            v2 = (int)typeof(MyClass).GetProperty(nameof(MyClass.One)).GetValue(myClass);
-            v3 = (Vector3)typeof(MyClass).GetProperty(nameof(MyClass.Point)).GetValue(myClass);
-        }
-        oTime.Stop();
-        DebugLog("PropertyInfo GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = (string)warp.nameOfField[nameof(MyClass.Str)].GetValue(bytePtr);
-            v2 = (int)warp.nameOfField[nameof(MyClass.One)].GetValue(bytePtr);
-            v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].GetValue(bytePtr);
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = warp.nameOfField[nameof(MyClass.Str)].propertyDelegateItem.getString(bytePtr);
-            v2 = warp.nameOfField[nameof(MyClass.One)].propertyDelegateItem.getInt32(bytePtr);
-#if ENABLE_MONO && !Test_Il2cpp
-            v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].propertyDelegateItem.getObject(bytePtr);
-#else
-            v3 = (Vector3)warp.nameOfField[nameof(MyClass.Point)].GetPropertyObject<Vector3>(bytePtr);
-#endif
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            v1 = addr1.propertyDelegateItem.getString(bytePtr);
-            v2 = addr2.propertyDelegateItem.getInt32(bytePtr);
-#if ENABLE_MONO && !Test_Il2cpp
-            v3 = (Vector3)addr3.propertyDelegateItem.getObject(bytePtr);
-#else
-            v3 = (Vector3)addr3.GetPropertyObject<Vector3>(bytePtr);
-#endif
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager GetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            myClass.Str = str;
-            myClass.One = 18;
-            myClass.Point = point;
-        }
-        oTime.Stop();
-        DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-        DebugLog("");
-        DebugLog("=========↓↓↓Array↓↓↓=========");
-        DebugLog("");
-        v1s = new string[] { "Ac", "S@D", "CS@", "CS2ss", "CXaa" };
-        v2s = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-        v3s = new Vector3[] { new Vector3(1, 2, 3), new Vector3(11, -2, 41.3f), new Vector3(19.999f, 9, 0), new Vector3(123.454f, 647.4f, 11) };
-        var arrayWrapV1 = ArrayWrapManager.GetIArrayWrap(typeof(string[]));
-        var arrayWrapV2 = ArrayWrapManager.GetIArrayWrap(typeof(int[]));
-        var arrayWrapV3 = ArrayWrapManager.GetIArrayWrap(typeof(Vector3[]));
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            Array arrayV1 = v1s;
-            for (int j = 0; j < arrayV1.Length; j++)
-            {
-                v1 = (string)arrayV1.GetValue(j);
             }
-            Array arrayV2 = v2s;
-            for (int j = 0; j < arrayV2.Length; j++)
-            {
-                v2 = (int)arrayV2.GetValue(j);
-            }
-            Array arrayV3 = v3s;
-            for (int j = 0; j < arrayV3.Length; j++)
-            {
-                v3 = (Vector3)arrayV3.GetValue(j);
-            }
-        }
+            oTime.Stop();
+            DebugLog("指针方法 SetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
-        oTime.Stop();
-        DebugLog("Array GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            ArrayWrapOutData data1 = arrayWrapV2.GetArrayData(v1s);
-            for (int j = 0; j < data1.length; j++)
-            {
-                v1 = (string)arrayWrapV1.GetValue(data1.startItemOffcet, j);
-            }
-            ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
-            for (int j = 0; j < data2.length; j++)
-            {
-                v2 = (int)arrayWrapV2.GetValue(data2.startItemOffcet, j);
-            }
-            ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
-            for (int j = 0; j < data3.length; j++)
-            {
-                v3 = (Vector3)arrayWrapV3.GetValue(data3.startItemOffcet, j);
-            }
-        }
-        oTime.Stop();
-        DebugLog("ArrayWrapManager GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            ArrayWrapOutData data1 = arrayWrapV2.GetArrayData(v1s);
-            for (int j = 0; j < data1.length; j++)
-            { 
-                v1 = UnsafeUtility.ReadArrayElement<string>(data1.startItemOffcet, j);
-            }
-            ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
-            for (int j = 0; j < data2.length; j++)
-            {
-                v2 = *(int*)(data2.startItemOffcet + arrayWrapV2.elementTypeSize * j);
-            }
-            ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
-            for (int j = 0; j < data3.length; j++)
-            {
-                v3 = UnsafeUtility.ReadArrayElement<Vector3>(data3.startItemOffcet, j);
-            }
-        }
-        oTime.Stop();
-        DebugLog("ArrayWrapManager GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        {
-            ArrayWrapOutData data1 = arrayWrapV2.GetArrayData(v1s);
-            ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
-            ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
             oTime.Reset(); oTime.Start();
             for (int i = 0; i < testCount; i++)
             {
+                v1 = myClass.Str;
+                v2 = myClass.One;
+                v3 = myClass.Point;
+            }
+            oTime.Stop();
+            DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+
+            DebugLog("");
+            DebugLog("====================================");
+            DebugLog("");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = (string)typeof(MyClass).GetProperty(nameof(MyClass.Str)).GetValue(myClass);
+                v2 = (int)typeof(MyClass).GetProperty(nameof(MyClass.One)).GetValue(myClass);
+                v3 = (Vector3)typeof(MyClass).GetProperty(nameof(MyClass.Point)).GetValue(myClass);
+            }
+            oTime.Stop();
+            DebugLog("PropertyInfo GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = (string) warp.Find(_Str, fieldName_StrLength).GetValue(bytePtr);
+                v2 = (int)warp.Find(_One, fieldName_OneLength).GetValue(bytePtr);
+                v3 = (Vector3)warp.Find(_Point, fieldName_PointLength).GetValue(bytePtr);
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 =  warp.Find(_Str, fieldName_StrLength).propertyDelegateItem.getString(bytePtr);
+                v2 = warp.Find(_One, fieldName_OneLength).propertyDelegateItem.getInt32(bytePtr);
+#if ENABLE_MONO && !Test_Il2cpp
+                v3 = (Vector3)warp.Find(_Point, fieldName_PointLength).propertyDelegateItem.getObject(bytePtr);
+#else
+            v3 = (Vector3)warp.Find(_Point, fieldName_PointLength).GetPropertyObject<Vector3>(bytePtr);
+#endif
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                v1 = addr1.propertyDelegateItem.getString(bytePtr);
+                v2 = addr2.propertyDelegateItem.getInt32(bytePtr);
+#if ENABLE_MONO && !Test_Il2cpp
+                v3 = (Vector3)addr3.propertyDelegateItem.getObject(bytePtr);
+#else
+            v3 = (Vector3)addr3.GetPropertyObject<Vector3>(bytePtr);
+#endif
+            }
+            oTime.Stop();
+            DebugLog("指针方法 GetValue 忽略字符串查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                myClass.Str = str;
+                myClass.One = 18;
+                myClass.Point = point;
+            }
+            oTime.Stop();
+            DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            DebugLog("");
+            DebugLog("=========↓↓↓Array↓↓↓=========");
+            DebugLog("");
+            v1s = new string[] { "Ac", "S@D", "CS@", "CS2ss", "CXaa" };
+            v2s = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+            v3s = new Vector3[] { new Vector3(1, 2, 3), new Vector3(11, -2, 41.3f), new Vector3(19.999f, 9, 0), new Vector3(123.454f, 647.4f, 11) };
+            var arrayWrapV1 = ArrayWrapManager.GetIArrayWrap(typeof(string[]));
+            var arrayWrapV2 = ArrayWrapManager.GetIArrayWrap(typeof(int[]));
+            var arrayWrapV3 = ArrayWrapManager.GetIArrayWrap(typeof(Vector3[]));
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                Array arrayV1 = v1s;
+                for (int j = 0; j < arrayV1.Length; j++)
+                {
+                    v1 = (string)arrayV1.GetValue(j);
+                }
+                Array arrayV2 = v2s;
+                for (int j = 0; j < arrayV2.Length; j++)
+                {
+                    v2 = (int)arrayV2.GetValue(j);
+                }
+                Array arrayV3 = v3s;
+                for (int j = 0; j < arrayV3.Length; j++)
+                {
+                    v3 = (Vector3)arrayV3.GetValue(j);
+                }
+            }
+
+            oTime.Stop();
+            DebugLog("Array GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
+                for (int j = 0; j < data1.length; j++)
+                {
+                    v1 = (string)arrayWrapV1.GetValue(data1.startItemOffcet, j);
+                }
+                ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
+                for (int j = 0; j < data2.length; j++)
+                {
+                    v2 = (int)arrayWrapV2.GetValue(data2.startItemOffcet, j);
+                }
+                ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
+                for (int j = 0; j < data3.length; j++)
+                {
+                    v3 = (Vector3)arrayWrapV3.GetValue(data3.startItemOffcet, j);
+                }
+            }
+            oTime.Stop();
+            DebugLog("ArrayWrapManager GetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                ArrayWrapOutData data1 = arrayWrapV2.GetArrayData(v1s);
                 for (int j = 0; j < data1.length; j++)
                 {
                     v1 = UnsafeUtility.ReadArrayElement<string>(data1.startItemOffcet, j);
                 }
+                ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
                 for (int j = 0; j < data2.length; j++)
                 {
                     v2 = *(int*)(data2.startItemOffcet + arrayWrapV2.elementTypeSize * j);
                 }
+                ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
                 for (int j = 0; j < data3.length; j++)
                 {
                     v3 = UnsafeUtility.ReadArrayElement<Vector3>(data3.startItemOffcet, j);
                 }
             }
-        }
-        oTime.Stop();
-        DebugLog("ArrayWrapManager GetValue 忽略Data查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Stop();
+            DebugLog("ArrayWrapManager GetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            {
+                ArrayWrapOutData data1 = arrayWrapV2.GetArrayData(v1s);
+                ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
+                ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
+                oTime.Reset(); oTime.Start();
+                for (int i = 0; i < testCount; i++)
+                {
+                    for (int j = 0; j < data1.length; j++)
+                    {
+                        v1 = UnsafeUtility.ReadArrayElement<string>(data1.startItemOffcet, j);
+                    }
+                    for (int j = 0; j < data2.length; j++)
+                    {
+                        v2 = *(int*)(data2.startItemOffcet + arrayWrapV2.elementTypeSize * j);
+                    }
+                    for (int j = 0; j < data3.length; j++)
+                    {
+                        v3 = UnsafeUtility.ReadArrayElement<Vector3>(data3.startItemOffcet, j);
+                    }
+                }
+            }
+            oTime.Stop();
+            DebugLog("ArrayWrapManager GetValue 忽略Data查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            for (int j = 0; j < v1s.Length; j++)
-            {
-                v1 = v1s[j];
-            }
-            for (int j = 0; j < v2s.Length; j++)
-            {
-                v2 = v2s[j];
-            }
-            for (int j = 0; j < v3s.Length; j++)
-            {
-                v3 = v3s[j];
-            }
-        }
-        oTime.Stop();
-        DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            Array arrayV1 = v1s;
-            for (int j = 0; j < arrayV1.Length; j++)
-            {
-                arrayV1.SetValue(v1, j);
-            }
-            Array arrayV2 = v2s;
-            for (int j = 0; j < arrayV2.Length; j++)
-            {
-                arrayV2.SetValue(v2, j);
-            }
-            Array arrayV3 = v3s;
-            for (int j = 0; j < arrayV3.Length; j++)
-            {
-                arrayV3.SetValue(v3, j);
-            }
-        }
-        oTime.Stop();
-        DebugLog("Array SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
-            for (int j = 0; j < data1.length; j++)
-            {
-                arrayWrapV1.SetValue(data1.startItemOffcet, j, v1);
-            }
-            ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
-            for (int j = 0; j < data2.length; j++)
-            {
-                arrayWrapV2.SetValue(data2.startItemOffcet, j, v2);
-            }
-            ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
-            for (int j = 0; j < data3.length; j++)
-            {
-                arrayWrapV3.SetValue(data3.startItemOffcet, j, v3);
-            }
-        }
-        oTime.Stop();
-        DebugLog("ArrayWrapManager SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
-            for (int j = 0; j < data1.length; j++)
-            {
-                UnsafeUtility.CopyObjectAddressToPtr(v1, data1.startItemOffcet + arrayWrapV1.elementTypeSize * j);
-            }
-
-            ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
-            for (int j = 0; j < data2.length; j++)
-            {
-                *(int*)(data2.startItemOffcet + arrayWrapV2.elementTypeSize * j) = v2;
-            }
-
-            ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
-            for (int j = 0; j < data3.length; j++)
-            {
-                UnsafeUtility.WriteArrayElement<Vector3>(data3.startItemOffcet, j, v3);
-                //UnsafeUtility.MemCpy(data3.startItemOffcet + arrayWrapV3.elementTypeSize * j,
-                //    UnsafeUtility.AddressOf(ref v3), arrayWrapV3.elementTypeSize);
-            }
-        }
-        oTime.Stop();
-        DebugLog("ArrayWrapManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-        {
-            ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
-            ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
-            ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
             oTime.Reset(); oTime.Start();
             for (int i = 0; i < testCount; i++)
             {
+                for (int j = 0; j < v1s.Length; j++)
+                {
+                    v1 = v1s[j];
+                }
+                for (int j = 0; j < v2s.Length; j++)
+                {
+                    v2 = v2s[j];
+                }
+                for (int j = 0; j < v3s.Length; j++)
+                {
+                    v3 = v3s[j];
+                }
+            }
+            oTime.Stop();
+            DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                Array arrayV1 = v1s;
+                for (int j = 0; j < arrayV1.Length; j++)
+                {
+                    arrayV1.SetValue(v1, j);
+                }
+                Array arrayV2 = v2s;
+                for (int j = 0; j < arrayV2.Length; j++)
+                {
+                    arrayV2.SetValue(v2, j);
+                }
+                Array arrayV3 = v3s;
+                for (int j = 0; j < arrayV3.Length; j++)
+                {
+                    arrayV3.SetValue(v3, j);
+                }
+            }
+            oTime.Stop();
+            DebugLog("Array SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
+                for (int j = 0; j < data1.length; j++)
+                {
+                    arrayWrapV1.SetValue(data1.startItemOffcet, j, v1);
+                }
+                ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
+                for (int j = 0; j < data2.length; j++)
+                {
+                    arrayWrapV2.SetValue(data2.startItemOffcet, j, v2);
+                }
+                ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
+                for (int j = 0; j < data3.length; j++)
+                {
+                    arrayWrapV3.SetValue(data3.startItemOffcet, j, v3);
+                }
+            }
+            oTime.Stop();
+            DebugLog("ArrayWrapManager SetValue：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
                 for (int j = 0; j < data1.length; j++)
                 {
                     UnsafeUtility.CopyObjectAddressToPtr(v1, data1.startItemOffcet + arrayWrapV1.elementTypeSize * j);
                 }
 
+                ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
                 for (int j = 0; j < data2.length; j++)
                 {
                     *(int*)(data2.startItemOffcet + arrayWrapV2.elementTypeSize * j) = v2;
                 }
 
+                ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
                 for (int j = 0; j < data3.length; j++)
                 {
                     UnsafeUtility.WriteArrayElement<Vector3>(data3.startItemOffcet, j, v3);
+                    //UnsafeUtility.MemCpy(data3.startItemOffcet + arrayWrapV3.elementTypeSize * j,
+                    //    UnsafeUtility.AddressOf(ref v3), arrayWrapV3.elementTypeSize);
                 }
             }
-        }
-        oTime.Stop();
-        DebugLog("ArrayWrapManager SetValue 忽略Data查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+            oTime.Stop();
+            DebugLog("ArrayWrapManager SetValue 确定类型的：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
 
 
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            for (int j = 0; j < v1s.Length; j++)
             {
-                v1s[j] = v1;
+                ArrayWrapOutData data1 = arrayWrapV1.GetArrayData(v1s);
+                ArrayWrapOutData data2 = arrayWrapV2.GetArrayData(v2s);
+                ArrayWrapOutData data3 = arrayWrapV3.GetArrayData(v3s);
+                oTime.Reset(); oTime.Start();
+                for (int i = 0; i < testCount; i++)
+                {
+                    for (int j = 0; j < data1.length; j++)
+                    {
+                        UnsafeUtility.CopyObjectAddressToPtr(v1, data1.startItemOffcet + arrayWrapV1.elementTypeSize * j);
+                    }
+
+                    for (int j = 0; j < data2.length; j++)
+                    {
+                        *(int*)(data2.startItemOffcet + arrayWrapV2.elementTypeSize * j) = v2;
+                    }
+
+                    for (int j = 0; j < data3.length; j++)
+                    {
+                        UnsafeUtility.WriteArrayElement<Vector3>(data3.startItemOffcet, j, v3);
+                    }
+                }
             }
-            for (int j = 0; j < v2s.Length; j++)
+            oTime.Stop();
+            DebugLog("ArrayWrapManager SetValue 忽略Data查询：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
             {
-                v2s[j] = v2;
+                for (int j = 0; j < v1s.Length; j++)
+                {
+                    v1s[j] = v1;
+                }
+                for (int j = 0; j < v2s.Length; j++)
+                {
+                    v2s[j] = v2;
+                }
+                for (int j = 0; j < v3s.Length; j++)
+                {
+                    v3s[j] = v3;
+                }
             }
-            for (int j = 0; j < v3s.Length; j++)
+            oTime.Stop();
+            DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+
+
+            DebugLog("");
+            DebugLog("=============↓↓↓CreateInstance↓↓↓===============");
+            DebugLog("");
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
             {
-                v3s[j] = v3;
+                a = (MyClass)System.Activator.CreateInstance(typeof(MyClass));
             }
+            oTime.Stop();
+            DebugLog("Activator CreateInstance：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                a = (MyClass)warp.Create();
+            }
+            oTime.Stop();
+            DebugLog("指针方法 Create：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+
+            oTime.Reset(); oTime.Start();
+            for (int i = 0; i < testCount; i++)
+            {
+                a = new MyClass();
+            }
+            oTime.Stop();
+            DebugLog(" new ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
+
+            text.text = sb.ToString();
+
+            GC.Collect();
         }
-        oTime.Stop();
-        DebugLog("原生 ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-
-
-        DebugLog("");
-        DebugLog("=============↓↓↓CreateInstance↓↓↓===============");
-        DebugLog("");
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            a = (MyClass)System.Activator.CreateInstance(typeof(MyClass));
-        }
-        oTime.Stop();
-        DebugLog("Activator CreateInstance：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            a = (MyClass)warp.Create();
-        }
-        oTime.Stop();
-        DebugLog("ReflectionManager Create：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-
-        oTime.Reset(); oTime.Start();
-        for (int i = 0; i < testCount; i++)
-        {
-            a = new MyClass();
-        }
-        oTime.Stop();
-        DebugLog(" new ：" + oTime.Elapsed.TotalMilliseconds + " 毫秒");
-
-        text.text = sb.ToString();
-
-        GC.Collect();
     }
 
 

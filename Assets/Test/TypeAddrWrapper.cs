@@ -615,7 +615,7 @@ namespace PtrReflection
                         case TypeCode.String:
                         case TypeCode.Object:
 #if Use_Unsafe_Tool
-                            IntPtr* ptr = UnsafeTool.unsafeTool.ObjectToIntPtr(value);
+                            IntPtr* ptr = (IntPtr*)UnsafeTool.unsafeTool.ObjectToIntPtr(value);
 #else
                             ulong gcHandle;
                             IntPtr* ptr = (IntPtr*)UnsafeUtility.PinGCObjectAndGetAddress(value, out gcHandle);
