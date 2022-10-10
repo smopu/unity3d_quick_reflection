@@ -11529,6 +11529,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t UnsafeUtility_GetFieldOffsetInStruct_
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Type_get_IsClass_m760C57B1D66D7CBF284495764BB7EFC6E7D74B0F (Type_t * __this, const RuntimeMethod* method);
 // System.Int32 Unity.Collections.LowLevel.Unsafe.UnsafeUtility::GetFieldOffsetInClass(System.Reflection.FieldInfo)
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t UnsafeUtility_GetFieldOffsetInClass_mAFDC442FA61620CB16536E75B4B1AF35E4B10F20 (FieldInfo_t * ___field0, const RuntimeMethod* method);
+// System.Void* Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinSystemObjectAndGetAddress(System.Object,System.UInt64&)
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UnsafeUtility_PinSystemObjectAndGetAddress_m83BF3E5313566A44FF015A22F7FE614B61477BFD (RuntimeObject * ___target0, uint64_t* ___gcHandle1, const RuntimeMethod* method);
 // System.Void* Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinSystemArrayAndGetAddress(System.Object,System.UInt64&)
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UnsafeUtility_PinSystemArrayAndGetAddress_m396FB095E0A8F0AFE2F9AC37BB3AA0FC392F5AF5 (RuntimeObject * ___target0, uint64_t* ___gcHandle1, const RuntimeMethod* method);
 // System.IntPtr Unity.Profiling.ProfilerMarker::Internal_Create(System.String,System.UInt16)
@@ -12966,6 +12968,24 @@ IL_0036:
 		return L_12;
 	}
 }
+// System.Void* Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinGCObjectAndGetAddress(System.Object,System.UInt64&)
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UnsafeUtility_PinGCObjectAndGetAddress_mAB28EFECD30291BC9EDAB684F98D8F03EC4396E1 (RuntimeObject * ___target0, uint64_t* ___gcHandle1, const RuntimeMethod* method)
+{
+	void* V_0 = NULL;
+	{
+		RuntimeObject * L_0 = ___target0;
+		uint64_t* L_1 = ___gcHandle1;
+		void* L_2 = UnsafeUtility_PinSystemObjectAndGetAddress_m83BF3E5313566A44FF015A22F7FE614B61477BFD(L_0, (uint64_t*)L_1, /*hidden argument*/NULL);
+		V_0 = (void*)L_2;
+		goto IL_000b;
+	}
+
+IL_000b:
+	{
+		void* L_3 = V_0;
+		return (void*)(L_3);
+	}
+}
 // System.Void* Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinGCArrayAndGetDataAddress(System.Array,System.UInt64&)
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UnsafeUtility_PinGCArrayAndGetDataAddress_mC98709136019DD5119E3A8AE75792949DE03B1DE (RuntimeArray * ___target0, uint64_t* ___gcHandle1, const RuntimeMethod* method)
 {
@@ -12991,6 +13011,16 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UnsafeUtility_PinSystemArrayAndGetAddre
 	static UnsafeUtility_PinSystemArrayAndGetAddress_m396FB095E0A8F0AFE2F9AC37BB3AA0FC392F5AF5_ftn _il2cpp_icall_func;
 	if (!_il2cpp_icall_func)
 	_il2cpp_icall_func = (UnsafeUtility_PinSystemArrayAndGetAddress_m396FB095E0A8F0AFE2F9AC37BB3AA0FC392F5AF5_ftn)il2cpp_codegen_resolve_icall ("Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinSystemArrayAndGetAddress(System.Object,System.UInt64&)");
+	void* retVal = _il2cpp_icall_func(___target0, ___gcHandle1);
+	return retVal;
+}
+// System.Void* Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinSystemObjectAndGetAddress(System.Object,System.UInt64&)
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* UnsafeUtility_PinSystemObjectAndGetAddress_m83BF3E5313566A44FF015A22F7FE614B61477BFD (RuntimeObject * ___target0, uint64_t* ___gcHandle1, const RuntimeMethod* method)
+{
+	typedef void* (*UnsafeUtility_PinSystemObjectAndGetAddress_m83BF3E5313566A44FF015A22F7FE614B61477BFD_ftn) (RuntimeObject *, uint64_t*);
+	static UnsafeUtility_PinSystemObjectAndGetAddress_m83BF3E5313566A44FF015A22F7FE614B61477BFD_ftn _il2cpp_icall_func;
+	if (!_il2cpp_icall_func)
+	_il2cpp_icall_func = (UnsafeUtility_PinSystemObjectAndGetAddress_m83BF3E5313566A44FF015A22F7FE614B61477BFD_ftn)il2cpp_codegen_resolve_icall ("Unity.Collections.LowLevel.Unsafe.UnsafeUtility::PinSystemObjectAndGetAddress(System.Object,System.UInt64&)");
 	void* retVal = _il2cpp_icall_func(___target0, ___gcHandle1);
 	return retVal;
 }

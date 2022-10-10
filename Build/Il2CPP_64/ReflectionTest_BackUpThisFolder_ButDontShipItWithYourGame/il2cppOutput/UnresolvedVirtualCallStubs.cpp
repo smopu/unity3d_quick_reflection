@@ -89,6 +89,71 @@ struct ValueType_t4D0C27076F7C36E76190FB3328E232BCB1CD1FFF_marshaled_com
 {
 };
 
+// PtrReflection.ArrayWrapOutData
+struct ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38 
+{
+public:
+	// System.Int32 PtrReflection.ArrayWrapOutData::length
+	int32_t ___length_0;
+	// System.Int32[] PtrReflection.ArrayWrapOutData::arrayLengths
+	Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83* ___arrayLengths_1;
+	// System.Void* PtrReflection.ArrayWrapOutData::objPtr
+	void* ___objPtr_2;
+	// System.Byte* PtrReflection.ArrayWrapOutData::startItemOffcet
+	uint8_t* ___startItemOffcet_3;
+
+public:
+	inline static int32_t get_offset_of_length_0() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___length_0)); }
+	inline int32_t get_length_0() const { return ___length_0; }
+	inline int32_t* get_address_of_length_0() { return &___length_0; }
+	inline void set_length_0(int32_t value)
+	{
+		___length_0 = value;
+	}
+
+	inline static int32_t get_offset_of_arrayLengths_1() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___arrayLengths_1)); }
+	inline Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83* get_arrayLengths_1() const { return ___arrayLengths_1; }
+	inline Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83** get_address_of_arrayLengths_1() { return &___arrayLengths_1; }
+	inline void set_arrayLengths_1(Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83* value)
+	{
+		___arrayLengths_1 = value;
+		Il2CppCodeGenWriteBarrier((void**)(&___arrayLengths_1), (void*)value);
+	}
+
+	inline static int32_t get_offset_of_objPtr_2() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___objPtr_2)); }
+	inline void* get_objPtr_2() const { return ___objPtr_2; }
+	inline void** get_address_of_objPtr_2() { return &___objPtr_2; }
+	inline void set_objPtr_2(void* value)
+	{
+		___objPtr_2 = value;
+	}
+
+	inline static int32_t get_offset_of_startItemOffcet_3() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___startItemOffcet_3)); }
+	inline uint8_t* get_startItemOffcet_3() const { return ___startItemOffcet_3; }
+	inline uint8_t** get_address_of_startItemOffcet_3() { return &___startItemOffcet_3; }
+	inline void set_startItemOffcet_3(uint8_t* value)
+	{
+		___startItemOffcet_3 = value;
+	}
+};
+
+// Native definition for P/Invoke marshalling of PtrReflection.ArrayWrapOutData
+struct ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38_marshaled_pinvoke
+{
+	int32_t ___length_0;
+	Il2CppSafeArray/*NONE*/* ___arrayLengths_1;
+	void* ___objPtr_2;
+	uint8_t* ___startItemOffcet_3;
+};
+// Native definition for COM marshalling of PtrReflection.ArrayWrapOutData
+struct ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38_marshaled_com
+{
+	int32_t ___length_0;
+	Il2CppSafeArray/*NONE*/* ___arrayLengths_1;
+	void* ___objPtr_2;
+	uint8_t* ___startItemOffcet_3;
+};
+
 // PtrReflection.PropertyDelegateItemIL2Cpp/Size1
 struct Size1_tC37F2F5C81186FADEF43CEF0BD08FE6AE1EE184B 
 {
@@ -1154,24 +1219,6 @@ struct ResourceLocator_t1783916E271C27CB09DF57E7E5ED08ECA4B3275C_marshaled_com
 	Il2CppIUnknown* ____value_0;
 	int32_t ____dataPos_1;
 };
-
-// System.Runtime.InteropServices.GCHandle
-struct GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3 
-{
-public:
-	// System.Int32 System.Runtime.InteropServices.GCHandle::handle
-	int32_t ___handle_0;
-
-public:
-	inline static int32_t get_offset_of_handle_0() { return static_cast<int32_t>(offsetof(GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3, ___handle_0)); }
-	inline int32_t get_handle_0() const { return ___handle_0; }
-	inline int32_t* get_address_of_handle_0() { return &___handle_0; }
-	inline void set_handle_0(int32_t value)
-	{
-		___handle_0 = value;
-	}
-};
-
 
 // System.Threading.AsyncLocalValueChangedArgs`1<System.Object>
 struct AsyncLocalValueChangedArgs_1_t64BF6800935406CA808E9821DF12DBB72A71640D 
@@ -2798,83 +2845,6 @@ public:
 	}
 };
 
-
-// PtrReflection.ArrayWrapOutData
-struct ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38 
-{
-public:
-	// System.Int32 PtrReflection.ArrayWrapOutData::length
-	int32_t ___length_0;
-	// System.Int32[] PtrReflection.ArrayWrapOutData::arrayLengths
-	Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83* ___arrayLengths_1;
-	// System.Void* PtrReflection.ArrayWrapOutData::objPtr
-	void* ___objPtr_2;
-	// System.Byte* PtrReflection.ArrayWrapOutData::startItemOffcet
-	uint8_t* ___startItemOffcet_3;
-	// System.Runtime.InteropServices.GCHandle PtrReflection.ArrayWrapOutData::gCHandle
-	GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3  ___gCHandle_4;
-
-public:
-	inline static int32_t get_offset_of_length_0() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___length_0)); }
-	inline int32_t get_length_0() const { return ___length_0; }
-	inline int32_t* get_address_of_length_0() { return &___length_0; }
-	inline void set_length_0(int32_t value)
-	{
-		___length_0 = value;
-	}
-
-	inline static int32_t get_offset_of_arrayLengths_1() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___arrayLengths_1)); }
-	inline Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83* get_arrayLengths_1() const { return ___arrayLengths_1; }
-	inline Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83** get_address_of_arrayLengths_1() { return &___arrayLengths_1; }
-	inline void set_arrayLengths_1(Int32U5BU5D_t2B9E4FDDDB9F0A00EC0AC631BA2DA915EB1ECF83* value)
-	{
-		___arrayLengths_1 = value;
-		Il2CppCodeGenWriteBarrier((void**)(&___arrayLengths_1), (void*)value);
-	}
-
-	inline static int32_t get_offset_of_objPtr_2() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___objPtr_2)); }
-	inline void* get_objPtr_2() const { return ___objPtr_2; }
-	inline void** get_address_of_objPtr_2() { return &___objPtr_2; }
-	inline void set_objPtr_2(void* value)
-	{
-		___objPtr_2 = value;
-	}
-
-	inline static int32_t get_offset_of_startItemOffcet_3() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___startItemOffcet_3)); }
-	inline uint8_t* get_startItemOffcet_3() const { return ___startItemOffcet_3; }
-	inline uint8_t** get_address_of_startItemOffcet_3() { return &___startItemOffcet_3; }
-	inline void set_startItemOffcet_3(uint8_t* value)
-	{
-		___startItemOffcet_3 = value;
-	}
-
-	inline static int32_t get_offset_of_gCHandle_4() { return static_cast<int32_t>(offsetof(ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38, ___gCHandle_4)); }
-	inline GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3  get_gCHandle_4() const { return ___gCHandle_4; }
-	inline GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3 * get_address_of_gCHandle_4() { return &___gCHandle_4; }
-	inline void set_gCHandle_4(GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3  value)
-	{
-		___gCHandle_4 = value;
-	}
-};
-
-// Native definition for P/Invoke marshalling of PtrReflection.ArrayWrapOutData
-struct ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38_marshaled_pinvoke
-{
-	int32_t ___length_0;
-	Il2CppSafeArray/*NONE*/* ___arrayLengths_1;
-	void* ___objPtr_2;
-	uint8_t* ___startItemOffcet_3;
-	GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3  ___gCHandle_4;
-};
-// Native definition for COM marshalling of PtrReflection.ArrayWrapOutData
-struct ArrayWrapOutData_t34C0124E0744762E550BE63D5F10E15A002A8C38_marshaled_com
-{
-	int32_t ___length_0;
-	Il2CppSafeArray/*NONE*/* ___arrayLengths_1;
-	void* ___objPtr_2;
-	uint8_t* ___startItemOffcet_3;
-	GCHandle_t39FAEE3EA592432C93B574A31DD83B87F1847DE3  ___gCHandle_4;
-};
 
 // System.Collections.Generic.KeyValuePair`2<System.DateTime,System.Object>
 struct KeyValuePair_2_t5DDBBB9A3C8CBE3A4A39721E8F0A10AEBF13737B 
