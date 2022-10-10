@@ -348,7 +348,7 @@ namespace PtrReflection
                 stackSize = UnsafeOperation.PTR_COUNT;
             }
 
-            if (UnsafeOperation.IsCreate(fieldOrPropertyType))
+            if (!isArray && UnsafeOperation.IsCreate(fieldOrPropertyType))
             {
                 typeHead = UnsafeOperation.GetTypeHead(fieldOrPropertyType);
                 //heapSize = UnsafeOperation.HeapSizeOf(typeHead);

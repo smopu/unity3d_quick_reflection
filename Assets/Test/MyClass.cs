@@ -17,6 +17,10 @@ public class MyClass
     public string[] strs;
     public Vector3[] points;
 
+    public int[,,] oness;
+    public string[,] strss;
+    public Vector3[,] pointss;
+
 
     public Quaternion point2;
     public int point3;
