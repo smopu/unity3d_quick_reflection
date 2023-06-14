@@ -28,6 +28,12 @@ public class MyClass
     public int dd = 11;
 }
 
+public class G
+{
+    public int a = 12;
+    public string b = "1sdjfoisdjf";
+    public Vector3 c = new Vector3(1.1f, 2.2f, 3.3f);
+}
 public struct MyClass2
 {
 

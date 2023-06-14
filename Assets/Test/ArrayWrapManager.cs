@@ -29,13 +29,34 @@ namespace PtrReflection
 
     public unsafe abstract class IArrayWrap
     {
+        /// <summary>
+        /// 数组的元素类型的TypeCode
+        /// </summary>
         public readonly TypeCode elementTypeCode;
+        /// <summary>
+        /// 数组的类型头指针
+        /// </summary>
         public readonly IntPtr head;
+        /// <summary>
+        /// 数组的秩
+        /// </summary>
         public readonly int rank;
+        /// <summary>
+        /// 数组的元素长度
+        /// </summary>
         public readonly int elementTypeSize;
-        public readonly Type elementType; 
+        /// <summary>
+        /// 数组的元素类型
+        /// </summary>
+        public readonly Type elementType;
+        /// <summary>
+        /// 数组的元素是否是值类型，否就是引用类型
+        /// </summary>
         public readonly bool isValueType;
-        public IntPtr typeHead;
+        /// <summary>
+        /// 数组的元素的类型头指针，只有元素类型是引用类型的话，才需要这个
+        /// </summary>
+        public IntPtr elementTypeHead;
 
         public IArrayWrap(int rank, Type elementType)
         {
@@ -132,11 +153,11 @@ namespace PtrReflection
                         UnsafeUtility.ReleaseGCObject(gcHandle);
 #endif
 
-                        if (typeHead == default(IntPtr))
+                        if (elementTypeHead == default(IntPtr))
                         {
-                            typeHead = UnsafeOperation.GetTypeHead(elementType);
+                            elementTypeHead = UnsafeOperation.GetTypeHead(elementType);
                         }
-                        *ptr = typeHead;
+                        *ptr = elementTypeHead;
                         ptr += 2;
                         UnsafeUtility.MemCpy(ptr, field, this.elementTypeSize);
                         //UnsafeUtility.ReleaseGCObject(gcHandle);
@@ -224,7 +245,6 @@ namespace PtrReflection
                 //GeneralTool.SetObject(field, value);
             }
         }
-
 
     }
 

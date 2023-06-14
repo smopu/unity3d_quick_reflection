@@ -632,7 +632,7 @@ PlayerSettings:
     1: Use_Unsafe_Tool
   platformArchitecture: {}
   scriptingBackend:
-    Standalone: 0
+    Standalone: 1
   il2cppCompilerConfiguration:
     Standalone: 1
   managedStrippingLevel: {}

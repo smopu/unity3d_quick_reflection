@@ -256,6 +256,7 @@ namespace PtrReflection
 
         public Dictionary<string, TypeAddrFieldAndProperty> nameOfField;
         StringTable stringTable;
+
         TypeAddrFieldAndProperty[] allTypeField;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -459,6 +460,22 @@ namespace PtrReflection
             PropertyDelegateItemIL2Cpp.SetObject(propertyDelegateItem, obj, buffer, structPropertyIndex);
         }
 #endif
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void SetValue(object source, object value)
+        {
+#if Use_Unsafe_Tool
+            void* ptr = UnsafeTool.unsafeTool.ObjectToBytePtr(source);
+#else
+            ulong gcHandle;
+            bytePtr = (byte*)UnsafeUtility.PinGCObjectAndGetAddress(instens, out gcHandle);
+            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+            SetValue(ptr, value);
+        }
+
+
+
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -629,12 +646,22 @@ namespace PtrReflection
                 else
                 {
                     UnsafeUtility.CopyObjectAddressToPtr(value, field);
-                    //GeneralTool.SetObject(field, value);
                 }
             }
-
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe object GetValue(object source)
+        {
+#if Use_Unsafe_Tool
+            void* ptr = UnsafeTool.unsafeTool.ObjectToBytePtr(source);
+#else
+            ulong gcHandle;
+            bytePtr = (byte*)UnsafeUtility.PinGCObjectAndGetAddress(instens, out gcHandle);
+            UnsafeUtility.ReleaseGCObject(gcHandle);
+#endif
+            return GetValue(ptr);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe object GetValue(void* source)
